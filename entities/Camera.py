@@ -107,6 +107,10 @@ class Camera:
         if keys[pg.K_d]:
             self.x += strafe_x * move_speed
             self.z += strafe_z * move_speed
+        if keys[pg.K_SPACE]:
+            self.y += move_speed
+        if keys[pg.K_LSHIFT] and keys[pg.K_SPACE]:
+            self.y -= move_speed
 
             
         
