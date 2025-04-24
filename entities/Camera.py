@@ -18,7 +18,7 @@ class Camera:
     def getCombinedMatrix(self):
         translationMatrix = array([[1, 0, 0, -self.x],
                                    [0, -1, 0, self.y],
-                                   [0, 0, 1, self.z],
+                                   [0, 0, 1, -self.z],
                                    [0, 0, 0, 1]])
         # the y axis gets flipped because y is up
         phiMatrix = array([[cos(self.phi), 0, sin(self.phi), 0],
@@ -68,11 +68,11 @@ class Camera:
         if keys[pg.K_d]:
             self.phi -= 0.05
         if keys[pg.K_w]:
-            v = 1
+            v = 0.01
             self.z -= cos(self.phi) * v
             self.x += sin(self.phi) * v
         if keys[pg.K_s]:
-            v = -1
+            v = -0.01
             self.z -= cos(self.phi) * v
             self.x += sin(self.phi) * v
         

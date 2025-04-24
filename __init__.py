@@ -13,6 +13,8 @@ pg.init()
 FRAME_RATE = 60
 CAMERA_SCALE = 60
 
+DEBUG = True
+
 # Game States
 from utils.states import GameState, OnlineState
 gameState = GameState(1) # {0: TITLE, 1: IN_GAME}
@@ -29,7 +31,7 @@ window_x, window_y = screen.get_size()
 # Camera
 from entities import Camera
 from numpy import pi
-camera = Camera(z = -10, phi = pi/2, nx = window_x, ny = window_y)
+camera = Camera(z = -10, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
 
 # Create Dots
 from entities import Dots
@@ -40,6 +42,10 @@ coords = [
     [0, 0, 2],
     [1.1, 0, 1.1]
 ]
+
+from random import randint
+for i in range(100):
+    coords.append([randint(-10, 10), randint(-10, 10), randint(-10, 10)])
 for coord in coords:
     entities.append(Dots(coord[0], coord[1], coord[2]))
 
