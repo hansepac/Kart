@@ -32,7 +32,7 @@ window_x, window_y = screen.get_size()
 # Camera
 from entities import Camera
 from numpy import pi
-camera = Camera(z = -10, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
+camera = Camera(y=30, z = 0, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
 
 # Create Dots
 from entities import Dots
@@ -44,11 +44,12 @@ coords = [
     [1.1, 0, 1.1]
 ]
 
-from random import randint
-for i in range(1000):
-    coords.append([randint(-10, 10), randint(-10, 10), randint(-10, 10)])
-for coord in coords:
+from entities import Track
+firsttrack = Track(tracktype = Track.TRACK_TYPE_FLAT)
+for coord in firsttrack.nodes:
     entities.append(Dots(coord[0], coord[1], coord[2]))
+
+print(firsttrack.get_edge_homocoords())
 
 
 
