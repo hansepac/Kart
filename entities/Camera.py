@@ -94,23 +94,25 @@ class Camera:
         strafe_x = cos(self.phi)
         strafe_z = sin(self.phi)
 
+        shift_multiplier = 3.5 if keys[pg.K_LSHIFT] else 1
+
         # WASD movement
         if keys[pg.K_w]:
-            self.x += dir_x * move_speed
-            self.z += dir_z * move_speed
+            self.x += dir_x * move_speed * shift_multiplier
+            self.z += dir_z * move_speed * shift_multiplier
         if keys[pg.K_s]:
-            self.x -= dir_x * move_speed
-            self.z -= dir_z * move_speed
+            self.x -= dir_x * move_speed * shift_multiplier
+            self.z -= dir_z * move_speed * shift_multiplier
         if keys[pg.K_a]:
-            self.x -= strafe_x * move_speed
-            self.z -= strafe_z * move_speed
+            self.x -= strafe_x * move_speed * shift_multiplier
+            self.z -= strafe_z * move_speed * shift_multiplier
         if keys[pg.K_d]:
-            self.x += strafe_x * move_speed
-            self.z += strafe_z * move_speed
+            self.x += strafe_x * move_speed * shift_multiplier
+            self.z += strafe_z * move_speed * shift_multiplier
         if keys[pg.K_SPACE]:
-            self.y += move_speed
-        if keys[pg.K_LSHIFT] and keys[pg.K_SPACE]:
-            self.y -= move_speed
+            self.y += move_speed * shift_multiplier
+        if keys[pg.K_LCTRL]:
+            self.y -= move_speed * shift_multiplier
 
             
         
