@@ -8,7 +8,7 @@ class LocalPlayer(Driver):
         super.__init__(x, y, z)
 
         
-        
+    # add stuff about getting controls
 
 
     

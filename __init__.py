@@ -28,7 +28,8 @@ window_x, window_y = screen.get_size()
 
 # Camera
 from entities import Camera
-camera = Camera(z = -10, nx = window_x, ny = window_y)
+from numpy import pi
+camera = Camera(z = -10, phi = pi/2, nx = window_x, ny = window_y)
 
 # Create Dots
 from entities import Dots
