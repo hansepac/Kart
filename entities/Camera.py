@@ -1,4 +1,6 @@
 from numpy import array, sin, cos, pi
+from __init__ import Keyboard
+import pygame as pg
 
 class Camera:
     def __init__(self, x = 0, y = 0, z = 0, theta = pi/2, phi=0, nx=400, ny=400):
@@ -43,6 +45,7 @@ class Camera:
 
         return projectionMatrix @ cameraMatrix, viewportMatrix
 
+    # Improvement: replace for loop with array slicing
     def getScreenCoords(self, inputCoordinates):
         # take in a list of input vectors and return the corresponding screen vectors 
         newVectors = inputCoordinates
@@ -55,3 +58,24 @@ class Camera:
             # now apply the viewport matrix 
             step3 = vpMat @ step2
             newVectors[i] = step3
+        return newVectors
+    
+    def control(self, keyboard: Keyboard):
+        self.v = 3
+        keys = keyboard.pressed
+        if keys[pg.K_a]:
+            self.phi += 0.05
+        if keys[pg.K_d]:
+            self.phi -= 0.05
+        if keys[pg.K_w]:
+            v = 1
+            self.z -= cos(self.phi) * v
+            self.x += sin(self.phi) * v
+        if keys[pg.K_s]:
+            v = -1
+            self.z -= cos(self.phi) * v
+            self.x += sin(self.phi) * v
+        
+    
+
+
