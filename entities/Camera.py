@@ -51,7 +51,7 @@ class Camera:
             # first project the coordinate onto the screen
             step1 = camMat @ inputCoordinates[i] 
             # now scale it so that the first entry is one
-            step2 = step1/step1[3]
+            step2 = step1/step1[3] # this step has to happen each time because the scalar might be different each time. 
             # now apply the viewport matrix 
             step3 = vpMat @ step2
             newVectors[i] = step3
