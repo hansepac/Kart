@@ -4,7 +4,7 @@ import os
 import pygame as pg
 WINDOW_WIDTH = 1920
 WINDOW_HEIGHT = 1080
-window = pg.display.set_mode((WINDOW_WIDTH,WINDOW_HEIGHT), pg.RESIZABLE, vsync=1)
+screen = pg.display.set_mode((WINDOW_WIDTH,WINDOW_HEIGHT), pg.RESIZABLE, vsync=1)
 pg.display.set_caption('Kart')
 pg.display.init()
 pg.init()
@@ -18,9 +18,13 @@ from utils.states import GameState, OnlineState
 gameState = GameState(1) # {0: TITLE, 1: IN_GAME}
 onlineState = OnlineState(1) # {0: LOCAL, 1: ONLINE}
 
+# Keyboard
+from input.Controller import Keyboard
+keyboard = Keyboard()
+
 # Example
 from entities.Player import Player
-window_x, window_y = window.get_size()
+window_x, window_y = screen.get_size()
 player = Player(pg.Vector2(window_x/2, window_y/2))
 
 
