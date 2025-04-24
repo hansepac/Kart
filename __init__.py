@@ -22,6 +22,8 @@ onlineState = OnlineState(1) # {0: LOCAL, 1: ONLINE}
 
 # Keyboard
 from input.Controller import Keyboard
+pg.mouse.set_visible(False)
+pg.event.set_grab(True) 
 keyboard = Keyboard()
 
 # Example

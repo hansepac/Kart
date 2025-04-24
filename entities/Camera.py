@@ -3,7 +3,7 @@ from __init__ import Keyboard
 import pygame as pg
 
 class Camera:
-    def __init__(self, x = 0, y = 0, z = 0, theta = pi/2, phi=0, nx=400, ny=400):
+    def __init__(self, x = 0, y = 0, z = 0, theta = 0, phi=0, nx=400, ny=400):
     
         self.x = x
         self.y = y
@@ -61,21 +61,44 @@ class Camera:
         return newVectors
     
     def control(self, keyboard: Keyboard):
-        self.v = 3
+        dx, dy = pg.mouse.get_rel()
+
+        sensitivity = 0.002
+        move_speed = 0.01
+
+        # Mouse movement adjusts viewing angles
+        self.phi   += dx * sensitivity   # yaw (left-right)
+        self.theta += -dy * sensitivity   # pitch (up-down)
+
+        # Optional: clamp theta to avoid flipping
+        max_pitch = 1.5  # radians ~85 degrees
+        self.theta = max(-max_pitch, min(max_pitch, self.theta))
+
         keys = keyboard.pressed
-        if keys[pg.K_a]:
-            self.phi += 0.05
-        if keys[pg.K_d]:
-            self.phi -= 0.05
+
+        # Direction vector based on yaw (phi)
+        dir_x = sin(self.phi)
+        dir_z = -cos(self.phi)
+
+        # Strafe vector (perpendicular)
+        strafe_x = cos(self.phi)
+        strafe_z = sin(self.phi)
+
+        # WASD movement
         if keys[pg.K_w]:
-            v = 0.01
-            self.z -= cos(self.phi) * v
-            self.x += sin(self.phi) * v
+            self.x += dir_x * move_speed
+            self.z += dir_z * move_speed
         if keys[pg.K_s]:
-            v = -0.01
-            self.z -= cos(self.phi) * v
-            self.x += sin(self.phi) * v
+            self.x -= dir_x * move_speed
+            self.z -= dir_z * move_speed
+        if keys[pg.K_a]:
+            self.x -= strafe_x * move_speed
+            self.z -= strafe_z * move_speed
+        if keys[pg.K_d]:
+            self.x += strafe_x * move_speed
+            self.z += strafe_z * move_speed
+
+            
         
-    
 
 
