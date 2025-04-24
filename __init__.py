@@ -27,7 +27,6 @@ pg.event.set_grab(True)
 keyboard = Keyboard()
 
 # Example
-from entities import Player
 window_x, window_y = screen.get_size()
 
 # Camera
