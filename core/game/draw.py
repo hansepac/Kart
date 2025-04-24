@@ -1,4 +1,4 @@
-from __init__ import screen, player
+from __init__ import screen, camera, entities, keyboard
 from pygame import gfxdraw as dr
 import pygame as pg
 
@@ -7,4 +7,11 @@ def draw():
     screen.fill((0,0,0))
 
     # Draw all entities
-    player.draw(screen)
+    for entity in entities:
+        entity_pos = camera.getScreenCoords([entity.get_pos()])[0]
+        # entity.size = entity_pos[2]
+        print(camera.nx, camera.ny)
+        print(entity.get_pos())
+        print(entity_pos)
+        # print(round(entity_pos[0]), round(entity_pos[1]))
+        entity.draw(screen, round(entity_pos[0] % camera.nx), round(entity_pos[1] % camera.ny))

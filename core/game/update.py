@@ -1,4 +1,4 @@
-from __init__ import player
+from __init__ import camera, keyboard
 
 def update():
-    player.update()
+    camera.control(keyboard)

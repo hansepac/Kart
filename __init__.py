@@ -23,9 +23,24 @@ from input.Controller import Keyboard
 keyboard = Keyboard()
 
 # Example
-from entities.Player import Player
+from entities import Player
 window_x, window_y = screen.get_size()
-player = Player(pg.Vector2(window_x/2, window_y/2))
+
+# Camera
+from entities import Camera
+camera = Camera(z = -10, nx = window_x, ny = window_y)
+
+# Create Dots
+from entities import Dots
+entities = []
+coords = [
+    [0, 0, -2],
+    [2.2, 0 , 0],
+    [0, 0, 2],
+    [1.1, 0, 1.1]
+]
+for coord in coords:
+    entities.append(Dots(coord[0], coord[1], coord[2]))
 
 
 
