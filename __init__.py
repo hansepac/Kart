@@ -46,7 +46,7 @@ coords = [
 ]
 
 from random import randint
-for i in range(100):
+for i in range(1000):
     coords.append([randint(-10, 10), randint(-10, 10), randint(-10, 10)])
 for coord in coords:
     entities.append(Dots(coord[0], coord[1], coord[2]))

@@ -10,10 +10,10 @@ def draw():
 
 
     debug_text = [
-        f"Camera Pos: {camera.x}, {camera.y}, {camera.z}",
+        f"Camera Pos: {round(camera.x, 2)}, {round(camera.y, )}, {round(camera.z, 2)}",
         f"Camera Angle: {camera.phi}, {camera.theta}",
         f"FPS: {round(pg.time.Clock().get_fps())}",
-        f"Entities: {len(entities)}",
+        f"Entities: {len(entities)}"
     ]
 
 
@@ -33,6 +33,7 @@ def draw():
     # Draw all entities
     for entity in entities:
         entity_pos = camera.getScreenCoords([entity.get_pos()])[0]
-        # entity.size = entity_pos[2]
-        if entity_pos[0] < camera.nx and entity_pos[0] > 0 and entity_pos[1] < camera.ny and entity_pos[1] > 0 and entity_pos[2] < 0:
-            entity.draw(screen, round(entity_pos[0]), round(entity_pos[1]))
+        if entity_pos is not None:
+            # entity.size = entity_pos[2]
+            if entity_pos[0] < camera.nx and entity_pos[0] > 0 and entity_pos[1] < camera.ny and entity_pos[1] > 0 and entity_pos[2] < 0:
+                entity.draw(screen, round(entity_pos[0]), round(entity_pos[1]))

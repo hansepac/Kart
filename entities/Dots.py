@@ -3,9 +3,9 @@ from random import randint
 from numpy import array
 
 class Dots():
-    def __init__(self, x: int, y: int, z: int, color = (randint(100, 255), randint(100, 255), randint(100, 255))):
+    def __init__(self, x: int, y: int, z: int):
         self.pos = array([x, y, z])
-        self.color = color
+        self.color = (randint(100, 255), randint(100, 255), randint(100, 255))
         self.size = 5
 
     def get_pos(self):
