@@ -1,4 +1,4 @@
-from numpy import array, sin, cos, pi
+from numpy import array, sin, cos, tan, pi
 from __init__ import Keyboard
 import pygame as pg
 
@@ -14,6 +14,16 @@ class Camera:
         # camera canvas coordinates. 
         self.nx = nx 
         self.ny = ny
+
+    def perspective_matrix(self, fov, aspect_ratio, near, far):
+        f = 1 / tan(fov * pi/360)
+        return array([
+            [f / aspect_ratio, 0, 0, 0],
+            [0, f, 0, 0],
+            [0, 0, (far + near) / (near - far), (2 * far * near) / (near - far)],
+            [0, 0, -1, 0]
+        ])
+
 
     def getCombinedMatrix(self):
         translationMatrix = array([[1, 0, 0, -self.x],
@@ -32,11 +42,7 @@ class Camera:
         cameraMatrix = thetaMatrix @ phiMatrix @ translationMatrix
 
         # now make the projection matrix
-        left, right, bottom, top, near, far = -3, 3, -3, 3, 5, 20
-        projectionMatrix = array([[2*near/(right-left), 0, (right+left)/(right-left), 0],
-                                [0, 2*near/(top-bottom), (top + bottom)/(top-bottom), 0], 
-                                [0, 0, -1*(far + near)/(far - near), -2*far*near/(far-near)],
-                                [0, 0, -1, 0]])
+        projectionMatrix = self.perspective_matrix(70, self.nx/self.ny, 0.1, 1000 )
         
         # now make the viewport matrix. 
         viewportMatrix = array([[self.nx/2, 0, 0, (self.nx-1)/2], 
@@ -53,11 +59,15 @@ class Camera:
         for i in range(len(inputCoordinates)):
             # first project the coordinate onto the screen
             step1 = camMat @ inputCoordinates[i] 
-            # now scale it so that the first entry is one
-            step2 = step1/step1[3] # this step has to happen each time because the scalar might be different each time. 
-            # now apply the viewport matrix 
-            step3 = vpMat @ step2
-            newVectors[i] = step3
+            # filter objects here 
+            if step1[0] > -step1[3] and step1[0] < step1[3] and step1[1] > -step1[3] and step1[1] < step1[3] and step1[2] > -step1[3] and step1[2] < step1[3]:
+                # now scale it so that the first entry is one
+                step2 = step1/step1[3] # this step has to happen each time because the scalar might be different each time. 
+                # now apply the viewport matrix 
+                step3 = vpMat @ step2
+                newVectors[i] = step3
+            else:
+                newVectors[i] = None
         return newVectors
     
     def control(self, keyboard: Keyboard):
