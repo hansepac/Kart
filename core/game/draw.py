@@ -1,5 +1,6 @@
 from __init__ import screen, camera, entities, keyboard, firsttrack
 from pygame import gfxdraw as dr
+import numpy as np
 import pygame as pg
 
 font = pg.font.SysFont(None, 30)
@@ -13,20 +14,21 @@ def draw():
     # Draw all entities
     for entity in entities:
         entity_pos = camera.getScreenCoords([entity.get_pos()])[0]
-        if entity_pos is not None:
+        if np.linalg.norm(entity_pos) > 1:
             rendered_entities += 1
             # entity.size = entity_pos[2]
             entity.draw(screen, round(entity_pos[0]), round(entity_pos[1]))
 
     # draw track
+    screenedgecoordsmat = camera.prepDrawEdges(firsttrack.track_edge_homocoords)
     for edge in firsttrack.track_edge_homocoords:
         screenedgecoords = camera.getScreenCoords(edge)
-        if screenedgecoords[0] is not None and screenedgecoords[1] is not None:
+        if np.linalg.norm(screenedgecoords[0]) > 1 and np.linalg.norm(screenedgecoords[1]) > 1:
             pg.draw.line(screen, (255,255,255), list(screenedgecoords[0][0:2]), list(screenedgecoords[1][0:2]), 1)
 
     for rect in firsttrack.track_rect_homocoords:
         src = camera.getScreenCoords(rect)
-        if src[0] is not None and src[1] is not None and src[2] is not None and src[3] is not None:
+        if np.linalg.norm(src[0]) > 1 and np.linalg.norm(src[1]) > 1 and np.linalg.norm(src[2]) > 1 and np.linalg.norm(src[3]) > 1:
             pg.draw.polygon(screen, (255, 228, 168), [src[0][0:2], src[1][0:2], src[2][0:2], src[3][0:2]])
 
 

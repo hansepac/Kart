@@ -1,4 +1,5 @@
 from numpy import array, sin, cos, tan, pi
+import numpy as np
 from __init__ import Keyboard
 import pygame as pg
 
@@ -54,21 +55,46 @@ class Camera:
     # Improvement: replace for loop with array slicing
     def getScreenCoords(self, inputCoordinates):
         # take in a list of input vectors and return the corresponding screen vectors 
-        newVectors = inputCoordinates.copy()
         camMat, vpMat = self.getCombinedMatrix()
-        for i in range(len(inputCoordinates)):
-            # first project the coordinate onto the screen
-            step1 = camMat @ inputCoordinates[i] 
-            # filter objects here 
-            if step1[0] > -step1[3] and step1[0] < step1[3] and step1[1] > -step1[3] and step1[1] < step1[3] and step1[2] > -step1[3] and step1[2] < step1[3]:
-                # now scale it so that the first entry is one
-                step2 = step1/step1[3] # this step has to happen each time because the scalar might be different each time. 
-                # now apply the viewport matrix 
-                step3 = vpMat @ step2
-                newVectors[i] = step3
-            else:
-                newVectors[i] = None
-        return newVectors
+
+        # step 1 
+        step1 = array(inputCoordinates) @ camMat.T
+
+        # check for culling
+        mask = np.max(np.abs(step1[:, :3]), axis=1) > np.abs(step1[:, 3])
+    
+        # now scale each row 
+        inverse = 1 / step1[:, 3]
+        step2 = step1 * inverse[:, np.newaxis]
+
+        # now apply viewport matrix 
+        step3 = step2 @ vpMat.T 
+
+        # now set to zero if it shouldn't be shown
+        step3[mask, :] = 0
+
+        return step3
+    
+
+    # def prepDrawEdges(self, edges):
+    #     # takes in a list of pairs of input vectors (homogeneous)
+    #     camMat, vpMat = self.getCombinedMatrix()
+
+    #     # Convert the list of pairs into a numpy array with shape (n, 2, 4), where n is the number of pairs
+    #     edges_array = np.array(edges)  # Shape (n, 2, 4), each pair is (2, 4)
+
+    #     # Step 1: Apply the camera matrix (camMat) to each of the two points in each pair
+    #     step1 = edges_array @ camMat.T  # This results in (n, 2, 4) after applying the camera matrix
+
+    #     # Step 2: Create the mask to handle culling based on the condition
+    #     mask = np.max(np.abs(step1[:, :, :3]), axis=2) > np.abs(step1[:, :, 3])
+    #     step1[mask, :, :] = 0  # Set points to zero where they shouldn't be shown
+
+    #     # Step 3: Apply the viewport matrix after culling
+    #     step2 = step1 @ vpMat.T  # Apply the viewport matrix to the remaining points
+
+    #     return step2
+            
     
     def control(self, keyboard: Keyboard):
         dx, dy = pg.mouse.get_rel()
