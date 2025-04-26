@@ -54,7 +54,7 @@ class Camera:
     # Improvement: replace for loop with array slicing
     def getScreenCoords(self, inputCoordinates):
         # take in a list of input vectors and return the corresponding screen vectors 
-        newVectors = inputCoordinates
+        newVectors = inputCoordinates.copy()
         camMat, vpMat = self.getCombinedMatrix()
         for i in range(len(inputCoordinates)):
             # first project the coordinate onto the screen

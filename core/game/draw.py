@@ -19,7 +19,7 @@ def draw():
             entity.draw(screen, round(entity_pos[0]), round(entity_pos[1]))
 
     # draw track
-    for edge in firsttrack.get_edge_homocoords():
+    for edge in firsttrack.track_edge_homocoords:
         screenedgecoords = camera.getScreenCoords(edge)
         if screenedgecoords[0] is not None and screenedgecoords[1] is not None:
             pg.draw.line(screen, (255,255,255), list(screenedgecoords[0][0:2]), list(screenedgecoords[1][0:2]), 1)
@@ -30,7 +30,7 @@ def draw():
         f"Camera Angle: {camera.phi}, {camera.theta}",
         f"FPS: {round(pg.time.Clock().get_fps())}",
         f"Entities Seen: {rendered_entities}",
-        f"Number of edges in track: {len(firsttrack.get_edge_homocoords())}"
+        f"Number of edges in track: {len(firsttrack.edge_homocoords)}"
     ]
 
     def draw_lines_bottom_left(surface, lines, font, color, padding=10):
