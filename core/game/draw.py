@@ -1,5 +1,6 @@
-from __init__ import screen, camera, entities, keyboard
+from __init__ import screen, camera, entities, mapMaster, firsttrack
 from pygame import gfxdraw as dr
+import numpy as np
 import pygame as pg
 
 font = pg.font.SysFont(None, 30)
@@ -10,20 +11,16 @@ def draw():
 
     rendered_entities = 0
 
-    # Draw all entities
-    for entity in entities:
-        entity_pos = camera.getScreenCoords([entity.get_pos()])[0]
-        if entity_pos is not None:
-            rendered_entities += 1
-            # entity.size = entity_pos[2]
-            entity.draw(screen, round(entity_pos[0]), round(entity_pos[1]))
+    mapMaster.draw(screen)
+    
 
 
     debug_text = [
         f"Camera Pos: {round(camera.x, 2)}, {round(camera.y, )}, {round(camera.z, 2)}",
         f"Camera Angle: {camera.phi}, {camera.theta}",
         f"FPS: {round(pg.time.Clock().get_fps())}",
-        f"Entities Seen: {rendered_entities}"
+        f"Entities Seen: {rendered_entities}",
+        f"Number of edges in track: {len(firsttrack.edge_homocoords)}"
     ]
 
     def draw_lines_bottom_left(surface, lines, font, color, padding=10):

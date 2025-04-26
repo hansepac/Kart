@@ -21,10 +21,8 @@ gameState = GameState(1) # {0: TITLE, 1: IN_GAME}
 onlineState = OnlineState(1) # {0: LOCAL, 1: ONLINE}
 
 # Keyboard
-from input.Controller import Keyboard
 pg.mouse.set_visible(False)
 pg.event.set_grab(True) 
-keyboard = Keyboard()
 
 # Example
 window_x, window_y = screen.get_size()
@@ -32,24 +30,36 @@ window_x, window_y = screen.get_size()
 # Camera
 from entities import Camera
 from numpy import pi
-camera = Camera(z = -10, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
+camera = Camera(y=5, z = 0, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
+
+# MapMaster
+from entities import MapMaster
+mapMaster = MapMaster()
+
 
 # Create Dots
 from entities import Dots
 entities = []
-coords = [
-    [0, 0, -2],
-    [2.2, 0 , 0],
-    [0, 0, 2],
-    [1.1, 0, 1.1]
-]
+coords = []
 
-from random import randint
-for i in range(1000):
-    coords.append([randint(-10, 10), randint(-10, 10), randint(-10, 10)])
-for coord in coords:
+
+from entities import Track
+firsttrack = Track(tracktype = Track.TRACK_TYPE_FLAT)
+for coord in firsttrack.track_verts_homocoords:
     entities.append(Dots(coord[0], coord[1], coord[2]))
+entities[0].color = (0, 255, 0)
+entities[1].color = (0, 255, 0)
+entities[2].color = (0, 255, 0)
+entities[3].color = (0, 0, 255)
+entities[4].color = (0, 0, 255)
+entities[5].color = (0, 0, 255)
 
+mapMaster.entities = entities
+from entities import LocalPlayer
+local_player = LocalPlayer()
+mapMaster.local_players.append(local_player)
+mapMaster.drivers.append(local_player)
+mapMaster.track = firsttrack
 
 
 
