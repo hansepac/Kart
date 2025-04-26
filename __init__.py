@@ -54,19 +54,12 @@ entities[3].color = (0, 0, 255)
 entities[4].color = (0, 0, 255)
 entities[5].color = (0, 0, 255)
 
-from random import randint, random
-for i in range(10000):
-    x = random() * 20 - 10
-    z = random() * 20 - 10
-    coords.append([x, 0.1 * ( x ** 2 + z ** 2 ) , z])
-for coord in coords:
-    entities.append(Dots(coord[0], coord[1], coord[2]))
-
 mapMaster.entities = entities
 from entities import LocalPlayer
 local_player = LocalPlayer()
 mapMaster.local_players.append(local_player)
 mapMaster.drivers.append(local_player)
+mapMaster.track = firsttrack
 
 
 

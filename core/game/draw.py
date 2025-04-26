@@ -12,20 +12,6 @@ def draw():
     rendered_entities = 0
 
     mapMaster.draw(screen)
-
-    # draw track
-    # screenedgecoordsmat = camera.prepDrawEdges(firsttrack.track_edge_homocoords)
-    for edge in firsttrack.track_edge_homocoords:
-        screenedgecoords = camera.getScreenCoords(edge)
-        if np.linalg.norm(screenedgecoords[0]) > 1 and np.linalg.norm(screenedgecoords[1]) > 1:
-            pg.draw.line(screen, (255,255,255), list(screenedgecoords[0][0:2]), list(screenedgecoords[1][0:2]), 1)
-
-    for rect in firsttrack.track_rect_homocoords:
-        src = camera.getScreenCoords(rect)
-        if np.linalg.norm(src[0]) > 1 and np.linalg.norm(src[1]) > 1 and np.linalg.norm(src[2]) > 1 and np.linalg.norm(src[3]) > 1:
-            pg.draw.polygon(screen, (255, 228, 168), [src[0][0:2], src[1][0:2], src[2][0:2], src[3][0:2]])
-
-
     
 
 

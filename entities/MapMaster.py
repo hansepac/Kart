@@ -1,5 +1,6 @@
 import pygame as pg
-from numpy import array, sin, cos, pi
+from numpy import array
+import numpy as np
 
 class MapMaster:
     def __init__(self):
@@ -8,13 +9,14 @@ class MapMaster:
         self.player_screen_dimensions = []
         self.entities = []
         self.items = []
+        self.track = None
 
     def get_track_pos(self, pos):
-        pos[1] = 0.1 * ( pos[0] ** 2 + pos[2] ** 2 )
+        pos[1] = self.track.get_ground_height(pos)
         return pos
     
     def get_track_normal(self, pos):
-        return array([-2*pos[0], 1, -2*pos[2]], dtype=float)
+        return array([0, 1, 0])
 
     def update(self, screen):
         win_x, win_y = screen.get_size()
@@ -45,4 +47,17 @@ class MapMaster:
             for i in range(len(self.entities)):
                 if dot_screen_pos[i] is not None:
                     self.entities[i].draw(screen, round(dot_screen_pos[i][0]), round(dot_screen_pos[i][1]))
+            
+            for edge in self.track.track_edge_homocoords:
+                screenedgecoords = player.camera.getScreenCoords(edge)
+                if np.linalg.norm(screenedgecoords[0]) > 1 and np.linalg.norm(screenedgecoords[1]) > 1:
+                    pg.draw.line(screen, (255,255,255), list(screenedgecoords[0][0:2]), list(screenedgecoords[1][0:2]), 1)
+
+            for rect in self.track.track_rect_homocoords:
+                src = player.camera.getScreenCoords(rect)
+                if np.linalg.norm(src[0]) > 1 and np.linalg.norm(src[1]) > 1 and np.linalg.norm(src[2]) > 1 and np.linalg.norm(src[3]) > 1:
+                    pg.draw.polygon(screen, (255, 228, 168), [src[0][0:2], src[1][0:2], src[2][0:2], src[3][0:2]])
+
+        
+
         

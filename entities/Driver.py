@@ -10,7 +10,7 @@ class Driver:
         self.normal = array([0, 1, 0], dtype=float)
         self.phi = phi
         self.theta = theta
-        self.top_speed = 0.1
+        self.top_speed = 0.01
         self.turn_speed = 0.05
 
         self.rank = 0
@@ -39,7 +39,7 @@ class Driver:
         self.theta = arctan(self.normal[1] / sqrt(self.normal[0]**2 + self.normal[2]**2)) + pi/2
         # Update phi based on turning
         self.phi += self.turn_speed * self.inputs["turn_dir"]
-        print(self.phi)
+        # print(self.phi)
 
         # print(f"phi: {self.phi}, theta: {self.theta}")
         # print(f"sin(phi): {cos(self.phi)}, cos(theta): {cos(self.theta)}")

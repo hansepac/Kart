@@ -65,15 +65,17 @@ class Track:
     TRACK_TYPE_IRREGULARG = 2
 
 
-    def __init__(self, trackorigin = array([0,0,0]), trackradius = 7, nodes=10, trackwidth=0.2, tracktype=TRACK_TYPE_FLAT):
+    def __init__(self, trackorigin = array([0,0,0]), trackradius = 20, nodes=8, trackwidth=0.4, tracktype=TRACK_TYPE_FLAT):
         
         self.trackradius = trackradius
-        self.trackwidth = 0.2
+        self.trackwidth = trackwidth
         self.tracktype = tracktype
 
 
         # here is where we generate the track
-        np.random.seed(45)
+        # np.random.seed(45)
+        # seed 45 was a good one with 10 nodes. and track radius 7 and trackwidth 0.2
+        np.random.seed(49)
 
         # NEW METHOD
         # Step 1: Generate points roughly on a circle
@@ -90,7 +92,7 @@ class Track:
         # Step 2: (Optional) Shuffle a little
         np.random.shuffle(points)
 
-        # Step 3: Sort points in rough circle order (optional, helps smoothness)
+        # # Step 3: Sort points in rough circle order (optional, helps smoothness)
         # angles = np.arctan2(points[:,1], points[:,0])
         # order = np.argsort(angles)
         # points = points[order]

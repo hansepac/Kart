@@ -10,8 +10,8 @@ class LocalPlayer(Driver):
         super().__init__(x, y, z, phi)
         self.controller: Controller = Controller()
         self.camera = Camera(x, y, z, phi)
-        self.camera_height = 0.5
-        self.camera_distance = 2
+        self.camera_height = 0.05
+        self.camera_distance = 0.2
         self.camera_theta = 0.1
 
     def updateCameraPositon(self, win_x, win_y):
