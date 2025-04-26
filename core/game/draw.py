@@ -11,12 +11,12 @@ def draw():
     rendered_entities = 0
 
     # Draw all entities
-    for entity in entities:
-        entity_pos = camera.getScreenCoords([entity.get_pos()])[0]
-        if entity_pos is not None:
+    dot_pos = [entity.get_pos() for entity in entities]
+    dot_screen_pos = camera.getScreenCoords(dot_pos)
+    for i in range(len(entities)):
+        if dot_screen_pos[i] is not None:
             rendered_entities += 1
-            # entity.size = entity_pos[2]
-            entity.draw(screen, round(entity_pos[0]), round(entity_pos[1]))
+            entities[i].draw(screen, round(dot_screen_pos[i][0]), round(dot_screen_pos[i][1]))
 
 
     debug_text = [
