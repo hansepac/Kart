@@ -21,10 +21,8 @@ gameState = GameState(1) # {0: TITLE, 1: IN_GAME}
 onlineState = OnlineState(1) # {0: LOCAL, 1: ONLINE}
 
 # Keyboard
-from input.Controller import Keyboard
 pg.mouse.set_visible(False)
 pg.event.set_grab(True) 
-keyboard = Keyboard()
 
 # Example
 window_x, window_y = screen.get_size()
@@ -34,21 +32,31 @@ from entities import Camera
 from numpy import pi
 camera = Camera(z = -10, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
 
+# MapMaster
+from entities import MapMaster
+mapMaster = MapMaster()
+
+
 # Create Dots
 from entities import Dots
 entities = []
-coords = [
-    [0, 0, -2],
-    [2.2, 0 , 0],
-    [0, 0, 2],
-    [1.1, 0, 1.1]
-]
+coords = []
 
-from random import randint
-for i in range(1000):
-    coords.append([randint(-10, 10), randint(-10, 10), randint(-10, 10)])
+from random import randint, random
+for i in range(10000):
+    x = random() * 20 - 10
+    z = random() * 20 - 10
+    coords.append([x, 0.1 * ( x ** 2 + z ** 2 ) , z])
 for coord in coords:
     entities.append(Dots(coord[0], coord[1], coord[2]))
+
+mapMaster.entities = entities
+from entities import LocalPlayer
+local_player = LocalPlayer()
+mapMaster.local_players.append(local_player)
+mapMaster.drivers.append(local_player)
+
+
 
 
 

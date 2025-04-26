@@ -1,4 +1,4 @@
-from __init__ import screen, camera, entities, keyboard
+from __init__ import screen, camera, entities, mapMaster
 from pygame import gfxdraw as dr
 import pygame as pg
 
@@ -10,14 +10,7 @@ def draw():
 
     rendered_entities = 0
 
-    # Draw all entities
-    dot_pos = [entity.get_pos() for entity in entities]
-    dot_screen_pos = camera.getScreenCoords(dot_pos)
-    for i in range(len(entities)):
-        if dot_screen_pos[i] is not None:
-            rendered_entities += 1
-            entities[i].draw(screen, round(dot_screen_pos[i][0]), round(dot_screen_pos[i][1]))
-
+    mapMaster.draw(screen)
 
     debug_text = [
         f"Camera Pos: {round(camera.x, 2)}, {round(camera.y, )}, {round(camera.z, 2)}",
