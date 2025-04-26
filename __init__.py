@@ -54,6 +54,33 @@ entities[3].color = (0, 0, 255)
 entities[4].color = (0, 0, 255)
 entities[5].color = (0, 0, 255)
 
+import numpy as np
+
+num_dots = 1000
+dots = []
+
+# Generate random points within the radius
+for _ in range(num_dots):
+    # Random polar coordinates within the circle
+    r = np.random.uniform(0, firsttrack.trackradius/2)
+    theta = np.random.uniform(0, 2 * np.pi)
+    
+    # Convert to Cartesian coordinates
+    x = firsttrack.trackorigin[0] + r * np.cos(theta)
+    z = firsttrack.trackorigin[2] + r * np.sin(theta)
+
+    # Get the height using get_ground_height
+    y = firsttrack.get_ground_height(np.array([x, 0, z]))
+
+    # Create the Dots object
+    dot = Dots(x, y, z)
+    dot.color = (100, 100, 100)
+    dots.append(dot)
+
+# Add the dots to the entities list
+entities.extend(dots)
+
+
 mapMaster.entities = entities
 from entities import LocalPlayer
 local_player = LocalPlayer()
@@ -85,4 +112,3 @@ mapMaster.track = firsttrack
 # client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # client_socket.connect((HOST, PORT))
 # local_address = client_socket.getsockname()
-

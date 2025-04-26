@@ -65,17 +65,18 @@ class Track:
     TRACK_TYPE_IRREGULARG = 2
 
 
-    def __init__(self, trackorigin = array([0,0,0]), trackradius = 20, nodes=8, trackwidth=0.4, tracktype=TRACK_TYPE_FLAT):
+    def __init__(self, trackorigin = array([0,0,0]), trackradius = 20, nodes=7, trackwidth=0.4, tracktype=TRACK_TYPE_FLAT):
         
         self.trackradius = trackradius
         self.trackwidth = trackwidth
         self.tracktype = tracktype
+        self.trackorigin = trackorigin
 
 
         # here is where we generate the track
         # np.random.seed(45)
         # seed 45 was a good one with 10 nodes. and track radius 7 and trackwidth 0.2
-        np.random.seed(49)
+        np.random.seed(50)
 
         # NEW METHOD
         # Step 1: Generate points roughly on a circle

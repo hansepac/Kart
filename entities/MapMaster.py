@@ -48,6 +48,7 @@ class MapMaster:
                 if dot_screen_pos[i] is not None:
                     self.entities[i].draw(screen, round(dot_screen_pos[i][0]), round(dot_screen_pos[i][1]))
             
+            # draw track
             for edge in self.track.track_edge_homocoords:
                 screenedgecoords = player.camera.getScreenCoords(edge)
                 if np.linalg.norm(screenedgecoords[0]) > 1 and np.linalg.norm(screenedgecoords[1]) > 1:
