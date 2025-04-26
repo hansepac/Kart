@@ -32,7 +32,7 @@ window_x, window_y = screen.get_size()
 # Camera
 from entities import Camera
 from numpy import pi
-camera = Camera(y=10, z = 0, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
+camera = Camera(y=5, z = 0, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
 
 # Create Dots
 from entities import Dots
@@ -48,7 +48,12 @@ from entities import Track
 firsttrack = Track(tracktype = Track.TRACK_TYPE_FLAT)
 for coord in firsttrack.track_verts_homocoords:
     entities.append(Dots(coord[0], coord[1], coord[2]))
-
+entities[0].color = (0, 255, 0)
+entities[1].color = (0, 255, 0)
+entities[2].color = (0, 255, 0)
+entities[3].color = (0, 0, 255)
+entities[4].color = (0, 0, 255)
+entities[5].color = (0, 0, 255)
 
 
 

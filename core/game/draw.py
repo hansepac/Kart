@@ -24,6 +24,11 @@ def draw():
         if screenedgecoords[0] is not None and screenedgecoords[1] is not None:
             pg.draw.line(screen, (255,255,255), list(screenedgecoords[0][0:2]), list(screenedgecoords[1][0:2]), 1)
 
+    for rect in firsttrack.track_rect_homocoords:
+        src = camera.getScreenCoords(rect)
+        if src[0] is not None and src[1] is not None and src[2] is not None and src[3] is not None:
+            pg.draw.polygon(screen, (255, 228, 168), [src[0][0:2], src[1][0:2], src[2][0:2], src[3][0:2]])
+
 
     debug_text = [
         f"Camera Pos: {round(camera.x, 2)}, {round(camera.y, )}, {round(camera.z, 2)}",
