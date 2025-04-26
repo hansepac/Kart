@@ -1,4 +1,4 @@
-from __init__ import screen, camera, entities, keyboard, firsttrack
+from __init__ import screen, camera, entities, mapMaster, firsttrack
 from pygame import gfxdraw as dr
 import numpy as np
 import pygame as pg
@@ -11,16 +11,10 @@ def draw():
 
     rendered_entities = 0
 
-    # Draw all entities
-    for entity in entities:
-        entity_pos = camera.getScreenCoords([entity.get_pos()])[0]
-        if np.linalg.norm(entity_pos) > 1:
-            rendered_entities += 1
-            # entity.size = entity_pos[2]
-            entity.draw(screen, round(entity_pos[0]), round(entity_pos[1]))
+    mapMaster.draw(screen)
 
     # draw track
-    screenedgecoordsmat = camera.prepDrawEdges(firsttrack.track_edge_homocoords)
+    # screenedgecoordsmat = camera.prepDrawEdges(firsttrack.track_edge_homocoords)
     for edge in firsttrack.track_edge_homocoords:
         screenedgecoords = camera.getScreenCoords(edge)
         if np.linalg.norm(screenedgecoords[0]) > 1 and np.linalg.norm(screenedgecoords[1]) > 1:
@@ -30,6 +24,9 @@ def draw():
         src = camera.getScreenCoords(rect)
         if np.linalg.norm(src[0]) > 1 and np.linalg.norm(src[1]) > 1 and np.linalg.norm(src[2]) > 1 and np.linalg.norm(src[3]) > 1:
             pg.draw.polygon(screen, (255, 228, 168), [src[0][0:2], src[1][0:2], src[2][0:2], src[3][0:2]])
+
+
+    
 
 
     debug_text = [

@@ -1,4 +1,6 @@
-from __init__ import camera, keyboard
+from __init__ import camera, mapMaster, screen
 
 def update():
-    camera.control(keyboard)
+    # camera.control()
+    mapMaster.update(screen)
+

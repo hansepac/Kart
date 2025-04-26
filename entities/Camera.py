@@ -1,6 +1,5 @@
 from numpy import array, sin, cos, tan, pi
 import numpy as np
-from __init__ import Keyboard
 import pygame as pg
 
 class Camera:
@@ -96,7 +95,7 @@ class Camera:
     #     return step2
             
     
-    def control(self, keyboard: Keyboard):
+    def control(self):
         dx, dy = pg.mouse.get_rel()
 
         sensitivity = 0.002
@@ -110,7 +109,7 @@ class Camera:
         max_pitch = 1.5  # radians ~85 degrees
         self.theta = max(-max_pitch, min(max_pitch, self.theta))
 
-        keys = keyboard.pressed
+        keys = pg.key.get_pressed()
 
         # Direction vector based on yaw (phi)
         dir_x = sin(self.phi)
