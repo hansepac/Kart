@@ -1,4 +1,4 @@
-from __init__ import *
+import pygame as pg
 
-def update():
+def update(events):
     pass

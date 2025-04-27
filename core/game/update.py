@@ -1,6 +1,6 @@
-from __init__ import camera, mapMaster, screen
+from __init__ import camera, mapMaster, screen, DEBUG
 
-def update():
+def update(events):
     # camera.control()
-    mapMaster.update(screen)
+    mapMaster.update(screen, events, DEBUG)
 
