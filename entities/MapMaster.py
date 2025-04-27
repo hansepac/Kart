@@ -9,10 +9,10 @@ class MapMaster:
         self.player_screen_dimensions = []
         self.entities = []
         self.items = []
-        self.track = None
+        self.terrain = None
 
     def get_track_pos(self, pos):
-        pos[1] = self.track.get_ground_height(pos)
+        pos[1] = 0
         return pos
     
     def get_track_normal(self, pos):
@@ -42,21 +42,18 @@ class MapMaster:
                 if driver_screen_pos[i] is not None:
                     self.drivers[i].draw(screen, round(driver_screen_pos[i][0]), round(driver_screen_pos[i][1]))
             # Draw Dots
-            dot_pos = [entity.get_pos() for entity in self.entities]
-            dot_screen_pos = player.camera.getScreenCoords(dot_pos)
-            for i in range(len(self.entities)):
-                if dot_screen_pos[i] is not None:
-                    self.entities[i].draw(screen, round(dot_screen_pos[i][0]), round(dot_screen_pos[i][1]))
+            # dot_pos = [entity.get_pos() for entity in self.entities]
+            # dot_screen_pos = player.camera.getScreenCoords(dot_pos)
+            # for i in range(len(self.entities)):
+            #     if dot_screen_pos[i] is not None:
+            #         self.entities[i].draw(screen, round(dot_screen_pos[i][0]), round(dot_screen_pos[i][1]))
             
-            for edge in self.track.track_edge_homocoords:
-                screenedgecoords = player.camera.getScreenCoords(edge)
-                if np.linalg.norm(screenedgecoords[0]) > 1 and np.linalg.norm(screenedgecoords[1]) > 1:
-                    pg.draw.line(screen, (255,255,255), list(screenedgecoords[0][0:2]), list(screenedgecoords[1][0:2]), 1)
-
-            for rect in self.track.track_rect_homocoords:
-                src = player.camera.getScreenCoords(rect)
-                if np.linalg.norm(src[0]) > 1 and np.linalg.norm(src[1]) > 1 and np.linalg.norm(src[2]) > 1 and np.linalg.norm(src[3]) > 1:
-                    pg.draw.polygon(screen, (255, 228, 168), [src[0][0:2], src[1][0:2], src[2][0:2], src[3][0:2]])
+            # draw terrain
+            for triangle in self.terrain.homo_triangles:
+                stv = player.camera.getScreenCoords(triangle)
+                if np.linalg.norm(stv[0]) > 1 and np.linalg.norm(stv[1]) > 1 and np.linalg.norm(stv[2]) > 1:
+                    pg.draw.polygon(screen, (255, 228, 168), list(stv[:, 1:2]))
+                
 
         
 

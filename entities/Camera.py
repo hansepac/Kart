@@ -51,12 +51,9 @@ class Camera:
 
         return projectionMatrix @ cameraMatrix, viewportMatrix
 
-    # Improvement: replace for loop with array slicing
     def getScreenCoords(self, inputCoordinates):
         # take in a list of input vectors and return the corresponding screen vectors 
         camMat, vpMat = self.getCombinedMatrix()
-
-        # step 1 
         step1 = array(inputCoordinates) @ camMat.T
 
         # check for culling

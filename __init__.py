@@ -43,23 +43,14 @@ entities = []
 coords = []
 
 
-from entities import Track
-firsttrack = Track(tracktype = Track.TRACK_TYPE_FLAT)
-for coord in firsttrack.track_verts_homocoords:
-    entities.append(Dots(coord[0], coord[1], coord[2]))
-entities[0].color = (0, 255, 0)
-entities[1].color = (0, 255, 0)
-entities[2].color = (0, 255, 0)
-entities[3].color = (0, 0, 255)
-entities[4].color = (0, 0, 255)
-entities[5].color = (0, 0, 255)
 
 mapMaster.entities = entities
-from entities import LocalPlayer
+from entities import LocalPlayer, Terrain
 local_player = LocalPlayer()
 mapMaster.local_players.append(local_player)
 mapMaster.drivers.append(local_player)
-mapMaster.track = firsttrack
+mapMaster.terrain = Terrain(grid_spacing=0.1)
+
 
 
 

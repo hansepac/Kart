@@ -1,4 +1,4 @@
-from __init__ import screen, camera, entities, mapMaster, firsttrack
+from __init__ import screen, camera, entities, mapMaster
 from pygame import gfxdraw as dr
 import numpy as np
 import pygame as pg
@@ -19,8 +19,7 @@ def draw():
         f"Camera Pos: {round(camera.x, 2)}, {round(camera.y, )}, {round(camera.z, 2)}",
         f"Camera Angle: {camera.phi}, {camera.theta}",
         f"FPS: {round(pg.time.Clock().get_fps())}",
-        f"Entities Seen: {rendered_entities}",
-        f"Number of edges in track: {len(firsttrack.edge_homocoords)}"
+        f"Entities Seen: {rendered_entities}"
     ]
 
     def draw_lines_bottom_left(surface, lines, font, color, padding=10):
