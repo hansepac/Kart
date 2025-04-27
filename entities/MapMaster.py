@@ -1,5 +1,5 @@
 import pygame as pg
-from numpy import array
+from numpy import array, pi
 import numpy as np
 from utils.ui import draw_debug_text
 
@@ -36,6 +36,9 @@ class MapMaster:
 
     def draw(self, screen, clock):
         for player in self.local_players:
+            angle = (player.camera.theta + pi/2)/pi
+            print(angle)
+            screen.fill((0, round(angle*200), round(angle*255)))
             # Draw Drivers
             driver_pos = [driver.get_pos() for driver in self.drivers]
             driver_screen_pos = player.camera.getScreenCoords(driver_pos)

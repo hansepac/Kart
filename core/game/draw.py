@@ -4,7 +4,4 @@ import numpy as np
 import pygame as pg
 
 def draw():
-    # Clear Screen
-    screen.fill((0,0,0))
-
     mapMaster.draw(screen, clock)

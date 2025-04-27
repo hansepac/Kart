@@ -14,4 +14,17 @@ These are the classes that we need to have
 
 
 
-Currently the up axis is the y axis. We might want to change that before we get too deep into things. 
+- Add controller controls
+- Add splitscreen
+- Add Networking
+   - Seperate out what is needed for the network, and regardless of online or offline, spin up a "server" and connect to it.
+   - Add ability to conncet over wifi
+- Add UI
+    - Title Screen
+    - Character Select
+    - Course Select
+    - Pause Menu
+    - Settings
+        - Change Controls
+- Add background
+
