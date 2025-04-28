@@ -34,7 +34,8 @@ class MapMaster:
 
     def draw(self, screen, clock):
         for player in self.local_players:
-            screen.fill((200,200,255))
+            angle = (player.camera.theta + pi/2)/pi
+            screen.fill((0, round(angle*200), round(angle*255)))
 
             # iterate through players is iterating through cameras. 
             player.camera.updateCamMat() # update camera matrices once per frame
