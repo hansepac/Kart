@@ -16,9 +16,10 @@ class Renderable(ABC):
 
 # used for drawing terrain triangles
 class TerrainTriangle(Renderable):
-    def __init__(self, homo_verts, camera):
+    def __init__(self, homo_verts, camera, colour):
         super().__init__()
         self.homo_verts = homo_verts
+        self.colour = tuple([*colour])
 
         # initially calculate screen_verts and depth
         self.screen_verts = camera.drawTriangle(homo_verts)
@@ -42,8 +43,8 @@ class TerrainTriangle(Renderable):
         #     pg.draw.lines(screen, (255, 255, 255), closed=True, points=list(self.screen_verts[:, 0:2]))
 
         if len(self.screen_verts) > 2:
-            pg.draw.polygon(screen, (255, 228, 168), list(np.array(self.screen_verts)[:, 0:2]))
-            pg.draw.lines(screen, (255, 255, 255), closed=True, points=list(np.array(self.screen_verts)[:, 0:2]))
+            pg.draw.polygon(screen, self.colour, list(np.array(self.screen_verts)[:, 0:2]))
+            # pg.draw.lines(screen, (255, 255, 255), closed=True, points=list(np.array(self.screen_verts)[:, 0:2]))
 
 # a renderable specific to drivers
 class DriverSprite(Renderable):
