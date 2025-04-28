@@ -14,7 +14,7 @@ class MapMaster:
         self.terrain = None
 
     def get_track_pos(self, pos):
-        pos[1] = 0
+        pos[1] = self.terrain.get_ground_height(pos)
         return pos
     
     def get_track_normal(self, pos):

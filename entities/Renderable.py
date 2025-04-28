@@ -21,19 +21,29 @@ class TerrainTriangle(Renderable):
         self.homo_verts = homo_verts
 
         # initially calculate screen_verts and depth
-        self.screen_verts = camera.getScreenCoords(self.homo_verts)
-        self.screen_depth = np.mean(self.screen_verts[:, 2])
+        self.screen_verts = camera.drawTriangle(homo_verts)
+        if len(self.screen_verts) > 0:
+            self.screen_depth = np.mean(self.screen_verts[:, 2])
+        else:
+            self.screen_depth = 0
 
     def recalculate_screen_pos(self, camera):
         # calculate screen_verts and depth
-        self.screen_verts = camera.getScreenCoords(self.homo_verts)
-        self.screen_depth = np.mean(self.screen_verts[:, 2])
+        self.screen_verts = camera.drawTriangle(self.homo_verts)
+        if len(self.screen_verts) > 0:
+            self.screen_depth = np.mean(self.screen_verts[:, 2])
+        else:
+            self.screen_depth = 0
 
     def draw(self, screen):
         # draw the object and calculate 
-        if np.linalg.norm(self.screen_verts[0]) > 1 and np.linalg.norm(self.screen_verts[1]) > 1 and np.linalg.norm(self.screen_verts[2]) > 1:
-            pg.draw.polygon(screen, (255, 228, 168), list(self.screen_verts[:, 0:2]))
-            pg.draw.lines(screen, (255, 255, 255), closed=True, points=list(self.screen_verts[:, 0:2]))
+        # if np.linalg.norm(self.screen_verts[0]) > 1 and np.linalg.norm(self.screen_verts[1]) > 1 and np.linalg.norm(self.screen_verts[2]) > 1:
+        #     pg.draw.polygon(screen, (255, 228, 168), list(self.screen_verts[:, 0:2]))
+        #     pg.draw.lines(screen, (255, 255, 255), closed=True, points=list(self.screen_verts[:, 0:2]))
+
+        if len(self.screen_verts) > 2:
+            pg.draw.polygon(screen, (255, 228, 168), list(np.array(self.screen_verts)[:, 0:2]))
+            pg.draw.lines(screen, (255, 255, 255), closed=True, points=list(np.array(self.screen_verts)[:, 0:2]))
 
 # a renderable specific to drivers
 class DriverSprite(Renderable):
