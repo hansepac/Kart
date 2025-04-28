@@ -2,3 +2,4 @@ pygame
 numpy
 dotenv
 noise
+matplotlib
