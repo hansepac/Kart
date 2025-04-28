@@ -5,3 +5,4 @@ import pygame as pg
 
 def draw():
     mapMaster.draw(screen, clock)
+

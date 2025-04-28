@@ -41,7 +41,7 @@ class Driver:
     
     # put sprite stuff here. 
 
-    def get_pos(self):
+    def get_homo_pos(self):
         return array([*self.pos, 1])
 
     def updatePosition(self):
@@ -68,6 +68,3 @@ class Driver:
         
     def returnCurrentSprite(self):
         pass
-
-    def draw(self, screen, win_x, win_y):
-        return pg.draw.circle(screen, (255,255,255), (win_x, win_y), 20)
