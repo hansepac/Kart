@@ -37,11 +37,6 @@ from entities import MapMaster
 mapMaster = MapMaster()
 
 # Create Dots
-from entities import Dots
-entities = []
-coords = []
-
-mapMaster.entities = entities
 from entities import LocalPlayer, Terrain
 local_player = LocalPlayer(windowsize=screen.get_size())
 mapMaster.local_players.append(local_player)

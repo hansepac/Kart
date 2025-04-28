@@ -10,7 +10,6 @@ class MapMaster:
         self.drivers = []
         self.local_players = []
         self.player_screen_dimensions = []
-        self.entities = []
         self.items = []
         self.terrain = None
 
@@ -35,6 +34,7 @@ class MapMaster:
 
     def draw(self, screen, clock):
         for player in self.local_players:
+            screen.fill((200,200,255))
 
             # iterate through players is iterating through cameras. 
             player.camera.updateCamMat() # update camera matrices once per frame

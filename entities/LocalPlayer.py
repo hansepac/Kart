@@ -16,7 +16,7 @@ class LocalPlayer(Driver):
         self.gameDebugState: GameDebugState = GameDebugState(0)
 
 
-    def updateCameraPositon(self, win_x, win_y):
+    def updateCameraPositon(self):
         if self.gameDebugState != self.gameDebugState.FLY_DEBUG:
             # TODO: Adjust camera position factoring in the theta angle
             self.camera.theta = self.camera_theta
