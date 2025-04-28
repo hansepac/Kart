@@ -1,7 +1,4 @@
-from __init__ import screen, camera, entities, mapMaster, firsttrack, clock
-from pygame import gfxdraw as dr
-import numpy as np
-import pygame as pg
+from __init__ import screen, mapMaster, clock
 
 def draw():
     mapMaster.draw(screen, clock)
