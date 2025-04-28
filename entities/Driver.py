@@ -24,7 +24,17 @@ class Driver:
             "use_item": False
         }
 
-    def control(self):
+    def disable_inputs(self):
+        self.inputs = {
+            "gas": False,
+            "brake": False,
+            "reverse": False,
+            "turn_dir": 0, 
+            "drift": False,
+            "use_item": False
+        }
+
+    def control(self, events):
         return self.inputs
 
     # put position/velocity stuff here 

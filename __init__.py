@@ -12,11 +12,13 @@ pg.init()
 # GAME SETUP
 FRAME_RATE = 60
 CAMERA_SCALE = 60
-
 DEBUG = True
 
+# INITIALIZE FRAME RATE STUFF
+clock = pg.time.Clock()
+
 # Game States
-from utils.states import GameState, OnlineState
+from utils.states import GameState, OnlineState, GameDebugState
 gameState = GameState(1) # {0: TITLE, 1: IN_GAME}
 onlineState = OnlineState(1) # {0: LOCAL, 1: ONLINE}
 
@@ -24,25 +26,20 @@ onlineState = OnlineState(1) # {0: LOCAL, 1: ONLINE}
 pg.mouse.set_visible(False)
 pg.event.set_grab(True) 
 
-# Example
-window_x, window_y = screen.get_size()
-
 # Camera
 from entities import Camera
 from numpy import pi
+window_x, window_y = screen.get_size()
 camera = Camera(y=5, z = 0, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
 
 # MapMaster
 from entities import MapMaster
 mapMaster = MapMaster()
 
-
 # Create Dots
 from entities import Dots
 entities = []
 coords = []
-
-
 
 mapMaster.entities = entities
 from entities import LocalPlayer, Terrain

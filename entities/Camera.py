@@ -123,10 +123,8 @@ class Camera:
             return []
 
 
+    def control(self, inputs):
 
-
-    # for debug purposes, control the camera. 
-    def control(self):
         dx, dy = pg.mouse.get_rel()
 
         sensitivity = 0.002
@@ -140,8 +138,6 @@ class Camera:
         max_pitch = 1.5  # radians ~85 degrees
         self.theta = max(-max_pitch, min(max_pitch, self.theta))
 
-        keys = pg.key.get_pressed()
-
         # Direction vector based on yaw (phi)
         dir_x = sin(self.phi)
         dir_z = -cos(self.phi)
@@ -150,24 +146,22 @@ class Camera:
         strafe_x = cos(self.phi)
         strafe_z = sin(self.phi)
 
-        shift_multiplier = 3.5 if keys[pg.K_LSHIFT] else 1
+        shift_multiplier = 3.5 if inputs["drift"] else 1
+
+        # Turn left/right input
+        self.x += strafe_x * move_speed * shift_multiplier * inputs["turn_dir"]
+        self.z += strafe_z * move_speed * shift_multiplier * inputs["turn_dir"]
 
         # WASD movement
-        if keys[pg.K_w]:
+        if inputs["gas"]:
             self.x += dir_x * move_speed * shift_multiplier
             self.z += dir_z * move_speed * shift_multiplier
-        if keys[pg.K_s]:
+        if inputs["reverse"]:
             self.x -= dir_x * move_speed * shift_multiplier
             self.z -= dir_z * move_speed * shift_multiplier
-        if keys[pg.K_a]:
-            self.x -= strafe_x * move_speed * shift_multiplier
-            self.z -= strafe_z * move_speed * shift_multiplier
-        if keys[pg.K_d]:
-            self.x += strafe_x * move_speed * shift_multiplier
-            self.z += strafe_z * move_speed * shift_multiplier
-        if keys[pg.K_SPACE]:
+        if inputs["use_item"]:
             self.y += move_speed * shift_multiplier
-        if keys[pg.K_LCTRL]:
+        if inputs["brake"]:
             self.y -= move_speed * shift_multiplier
 
             
