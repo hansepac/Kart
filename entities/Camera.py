@@ -2,6 +2,8 @@ from numpy import array, sin, cos, tan, pi
 import numpy as np
 import pygame as pg
 
+
+
 class Camera:
     def __init__(self, x = 0, y = 0, z = 0, theta = 0, phi=0, nx=400, ny=400):
     
@@ -15,6 +17,16 @@ class Camera:
         self.nx = nx 
         self.ny = ny
 
+
+        self.camMat = None
+        self.updateCamMat()
+        
+        # now make the viewport matrix. 
+        self.vpMat = array([[self.nx/2, 0, 0, (self.nx-1)/2], 
+                                [0, self.ny/2, 0, (self.ny-1)/2], 
+                                [0, 0, 0.5, 0.5]])
+
+    
     def perspective_matrix(self, fov, aspect_ratio, near, far):
         f = 1 / tan(fov * pi/360)
         return array([
@@ -24,8 +36,8 @@ class Camera:
             [0, 0, -1, 0]
         ])
 
-
-    def getCombinedMatrix(self):
+    def updateCamMat(self):
+        # make initial camera matrix 
         translationMatrix = array([[1, 0, 0, -self.x],
                                    [0, -1, 0, self.y],
                                    [0, 0, 1, -self.z],
@@ -39,22 +51,18 @@ class Camera:
                              [0, cos(self.theta), -sin(self.theta), 0],
                              [0, sin(self.theta), cos(self.theta), 0],
                              [0, 0, 0, 1]])
-        cameraMatrix = thetaMatrix @ phiMatrix @ translationMatrix
+        perspectiveMatrix = self.perspective_matrix(70, self.nx/self.ny, 0.1, 1000 )
+        self.camMat = perspectiveMatrix @ thetaMatrix @ phiMatrix @ translationMatrix
 
-        # now make the projection matrix
-        projectionMatrix = self.perspective_matrix(70, self.nx/self.ny, 0.1, 1000 )
-        
-        # now make the viewport matrix. 
-        viewportMatrix = array([[self.nx/2, 0, 0, (self.nx-1)/2], 
+    def updateVpMat(self):
+        '''Update the viewport matrix if the size of the camera window changed. '''
+        self.vpMat = array([[self.nx/2, 0, 0, (self.nx-1)/2], 
                                 [0, self.ny/2, 0, (self.ny-1)/2], 
                                 [0, 0, 0.5, 0.5]])
 
-        return projectionMatrix @ cameraMatrix, viewportMatrix
-
     def getScreenCoords(self, inputCoordinates):
         # take in a list of input vectors and return the corresponding screen vectors 
-        camMat, vpMat = self.getCombinedMatrix()
-        step1 = array(inputCoordinates) @ camMat.T
+        step1 = array(inputCoordinates) @ self.camMat.T
 
         # check for culling
         mask = np.max(np.abs(step1[:, :3]), axis=1) > np.abs(step1[:, 3])
@@ -64,33 +72,12 @@ class Camera:
         step2 = step1 * inverse[:, np.newaxis]
 
         # now apply viewport matrix 
-        step3 = step2 @ vpMat.T 
+        step3 = step2 @ self.vpMat.T 
 
         # now set to zero if it shouldn't be shown
         step3[mask, :] = 0
 
         return step3
-    
-
-    # def prepDrawEdges(self, edges):
-    #     # takes in a list of pairs of input vectors (homogeneous)
-    #     camMat, vpMat = self.getCombinedMatrix()
-
-    #     # Convert the list of pairs into a numpy array with shape (n, 2, 4), where n is the number of pairs
-    #     edges_array = np.array(edges)  # Shape (n, 2, 4), each pair is (2, 4)
-
-    #     # Step 1: Apply the camera matrix (camMat) to each of the two points in each pair
-    #     step1 = edges_array @ camMat.T  # This results in (n, 2, 4) after applying the camera matrix
-
-    #     # Step 2: Create the mask to handle culling based on the condition
-    #     mask = np.max(np.abs(step1[:, :, :3]), axis=2) > np.abs(step1[:, :, 3])
-    #     step1[mask, :, :] = 0  # Set points to zero where they shouldn't be shown
-
-    #     # Step 3: Apply the viewport matrix after culling
-    #     step2 = step1 @ vpMat.T  # Apply the viewport matrix to the remaining points
-
-    #     return step2
-            
     
     def control(self):
         dx, dy = pg.mouse.get_rel()

@@ -46,10 +46,10 @@ coords = []
 
 mapMaster.entities = entities
 from entities import LocalPlayer, Terrain
-local_player = LocalPlayer()
+local_player = LocalPlayer(windowsize=screen.get_size())
 mapMaster.local_players.append(local_player)
 mapMaster.drivers.append(local_player)
-mapMaster.terrain = Terrain(grid_spacing=0.1)
+mapMaster.terrain = Terrain(grid_spacing=0.1, nx=20, nz=20, noise_density=0.1)
 
 
 

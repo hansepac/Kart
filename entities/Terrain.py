@@ -2,7 +2,7 @@ import numpy as np
 from noise import pnoise2
 
 class Terrain:
-    def __init__(self, grid_spacing = 1, nx = 100, nz = 100, center = np.array([0, 0, 0])):
+    def __init__(self, grid_spacing = 1, noise_density = 1, noise_height= 1, nx = 100, nz = 100, center = np.array([0, 0, 0])):
 
         self.points = np.zeros((nx, nz, 3))
         self.homo_points = np.zeros((nx, nz, 4))
@@ -15,13 +15,11 @@ class Terrain:
         # generate perlin height
         for i in range(nx):
             for j in range(nz):
-                self.points[j, i, 0] = (i + 3**0.5/2 * (j % 2) - nx/2)*grid_spacing + center[0]
-                self.points[j, i, 1] = (j - nz/2)*grid_spacing + center[2]
-                self.points[j, i, 2] = pnoise2((i + 3**0.5/2 * (j % 2)) / grid_spacing, j / grid_spacing)
+                self.points[j, i, 0] = (i + 0.5 * (j % 2) - nx/2)*grid_spacing + center[0]
+                self.points[j, i, 2] = (j - nz/2)*grid_spacing*(3**0.5/2) + center[2]
+                self.points[j, i, 1] = noise_height* pnoise2((i + 0.5 * (j % 2)) * noise_density, j * noise_density)
 
-                self.homo_points[j, i, 0] = (i + 3**0.5/2 * (j % 2) - nx/2)*grid_spacing + center[0]
-                self.homo_points[j, i, 1] = (j - nz/2)*grid_spacing + center[2]
-                self.homo_points[j, i, 2] = pnoise2((i + 3**0.5/2 * (j % 2)) / grid_spacing, j / grid_spacing)
+                self.homo_points[j, i, 0:3] = self.points[j, i, :]
                 self.homo_points[j, i, 3] = 1
                 
         # pack homogeneous triangles

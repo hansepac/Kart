@@ -1,0 +1,67 @@
+from abc import ABC, abstractmethod
+from __init__ import pg
+import numpy as np
+
+class Renderable(ABC):
+    def __init__(self):
+        self.screen_depth = 0
+
+    @abstractmethod
+    def recalculate_screen_pos(self, camera):
+        pass
+
+    @abstractmethod
+    def draw(self, screen):
+        pass
+
+# used for drawing terrain triangles
+class TerrainTriangle(Renderable):
+    def __init__(self, homo_verts, camera):
+        super().__init__()
+        self.homo_verts = homo_verts
+
+        # initially calculate screen_verts and depth
+        self.screen_verts = camera.getScreenCoords(self.homo_verts)
+        self.screen_depth = np.mean(self.screen_verts[:, 2])
+
+    def recalculate_screen_pos(self, camera):
+        # calculate screen_verts and depth
+        self.screen_verts = camera.getScreenCoords(self.homo_verts)
+        self.screen_depth = np.mean(self.screen_verts[:, 2])
+
+    def draw(self, screen):
+        # draw the object and calculate 
+        if np.linalg.norm(self.screen_verts[0]) > 1 and np.linalg.norm(self.screen_verts[1]) > 1 and np.linalg.norm(self.screen_verts[2]) > 1:
+            pg.draw.polygon(screen, (255, 228, 168), list(self.screen_verts[:, 0:2]))
+            pg.draw.lines(screen, (255, 255, 255), closed=True, points=list(self.screen_verts[:, 0:2]))
+
+# a renderable specific to drivers
+class DriverSprite(Renderable):
+    def __init__(self, driver_object, camera):
+        super().__init__()
+        self.homoloc = driver_object.get_homo_pos() 
+
+        # initially calculate screenloc and depth
+        self.screenloc = camera.getScreenCoords([self.homoloc])[0]
+        self.screen_depth = self.screenloc[2]
+
+    def recalculate_screen_pos(self, camera):
+        self.screenloc = camera.getScreenCoords([self.homoloc])[0]
+
+    def draw(self, screen):
+        if np.linalg.norm(self.screenloc) > 1:
+            pg.draw.circle(screen, (255,255,255), (self.screenloc[0], self.screenloc[1]), 20)
+
+        
+
+# basically the same as the dots we used earlier. 
+class SimpleSprite(Renderable):
+    def __init__(self, screen_depth, winx, winy):
+        super().__init__()
+
+        self.winx, self.winy = winx, winy
+        self.color = (255, 255, 255)
+        self.size = 5
+
+    def draw(self, screen):
+        pg.draw.circle(screen, self.color, (self.win_x, self.win_y), self.size)
