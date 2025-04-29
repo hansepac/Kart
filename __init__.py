@@ -37,11 +37,11 @@ from entities import MapMaster
 mapMaster = MapMaster()
 
 # Create Dots
-from entities import LocalPlayer, Terrain
+from entities import LocalPlayer, TerrainGrid
 local_player = LocalPlayer(mapMaster, windowsize=screen.get_size())
 mapMaster.local_players.append(local_player)
 mapMaster.drivers.append(local_player)
-mapMaster.terrain = Terrain(grid_spacing=0.1, nx=35, nz=35, noise_density=0.1)
+mapMaster.terrainGrid = TerrainGrid(3, 3, grid_spacing=0.1, nx=50, nz=50)
 
 
 
