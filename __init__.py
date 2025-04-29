@@ -38,10 +38,10 @@ mapMaster = MapMaster()
 
 # Create Dots
 from entities import LocalPlayer, Terrain
-local_player = LocalPlayer(windowsize=screen.get_size())
+local_player = LocalPlayer(mapMaster, windowsize=screen.get_size())
 mapMaster.local_players.append(local_player)
 mapMaster.drivers.append(local_player)
-mapMaster.terrain = Terrain(grid_spacing=0.1, nx=30, nz=30, noise_density=0.1)
+mapMaster.terrain = Terrain(grid_spacing=0.1, nx=35, nz=35, noise_density=0.1)
 
 
 

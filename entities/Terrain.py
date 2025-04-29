@@ -41,6 +41,34 @@ class Terrain:
         self.homo_triangles = homo_triangles
         self.colours_triangles = colours
 
+    def get_normal_vector(self, pos_3d):
+        if pos_3d[0] > self.points[0, 0, 0] and pos_3d[0] < self.points[0, -1, 0] and pos_3d[2] > self.points[0, 0, 2] and pos_3d[2] < self.points[-1, 0, 2]:
+            # get grid indices to determine square of interest
+            i = int((pos_3d[0] - self.center[0])/self.grid_spacing + self.nx/2)
+            j = int((pos_3d[2] - self.center[2])/self.grid_spacing + self.nz/2)
+
+            # determine distance to both triangle edges
+            d1 = np.linalg.norm(pos_3d[[0, 2]] - self.points[j, i, :][[0, 2]])
+            d2 = np.linalg.norm(pos_3d[[0, 2]] - self.points[j+1, i+1, :][[0, 2]])
+
+            # select triangle and compute normal
+            if d1 < d2:
+                P1, P2, P3 = self.points[j, i, :], self.points[j, i+1, :], self.points[j+1, i, :]
+            else:
+                P1, P2, P3 = self.points[j+1, i+1, :], self.points[j, i+1, :], self.points[j+1, i, :]
+
+            v1 = np.array(P2) - np.array(P1)
+            v2 = np.array(P3) - np.array(P1)
+            normal = np.cross(v1, v2)
+            normal = normal / np.linalg.norm(normal)
+            if normal[1] < 0:
+                # this might never run, i'm not sure
+                normal *= -1
+            return normal
+        else:
+            # we aren't on the grid
+            return np.array([0, 1, 0])
+        
     def get_ground_height(self, pos_3d):
         if pos_3d[0] > self.points[0, 0, 0] and pos_3d[0] < self.points[0, -1, 0] and pos_3d[2] > self.points[0, 0, 2] and pos_3d[2] < self.points[-1, 0, 2]:
             # get grid indices to determine square of interest

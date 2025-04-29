@@ -13,20 +13,11 @@ class MapMaster:
         self.items = []
         self.terrain = None
 
-    def get_track_pos(self, pos):
-        pos[1] = self.terrain.get_ground_height(pos)
-        return pos
-    
-    def get_track_normal(self, pos):
-        return array([0, 1, 0])
-
 
     def update(self, events, DEBUG):
         for driver in self.drivers:
             driver.control(events)
             driver.updatePosition()
-            driver.pos = self.get_track_pos(driver.pos)
-            driver.normal = self.get_track_normal(driver.pos)
         for player in self.local_players:
             player.updateCameraPositon()
 
@@ -49,6 +40,7 @@ class MapMaster:
             # add a renderable for each triangle
             for i in range(len(self.terrain.homo_triangles)):
                 all_renderables.append(TerrainTriangle(self.terrain.homo_triangles[i], player.camera, colour=self.terrain.colours_triangles[i])) # creating renderables calculates screen location
+            
             # sort renderables according to depth
             all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)
 
