@@ -23,7 +23,7 @@ class Driver:
         self.max_momentum = 1500
         self.dt = 1/30
         self.gravity = 10
-        self.distance_to_ground_threshold = 0.1
+        self.distance_to_ground_threshold = 0.01
         self.mass = 1
         self.friction_coef = 0.3 # may depend on terrain
 
