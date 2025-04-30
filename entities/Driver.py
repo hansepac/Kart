@@ -5,7 +5,7 @@ class Driver:
     # this is any racing character, AI or player
     def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0])):
         self.pos = pos
-        self.vel_xz = 0
+        self.speed = 0
         self.vel_y = 0
         self.acc_y = 0
         self.omega = 0 # azimuthal velocity
@@ -19,8 +19,8 @@ class Driver:
         self.normal = np.array([0, 1, 0])
         self.gas_force = 2 # actually this needs to depend on velocity or things blow up
         self.turn_speed = 0.08 # also should depend on speed
-        self.slope_force = 0
-        self.max_momentum = 1500
+        self.slope_speed = 0
+        self.max_momentum = 1000
         self.dt = 1/30
         self.gravity = 10
         self.distance_to_ground_threshold = 0.01
@@ -50,7 +50,7 @@ class Driver:
     def control(self, events):
         return self.inputs
     
-    def get_speed(self, x, s = 0.4, r=0.2, a=0.005):
+    def get_speed(self, x, s = 0.5, r=0.3, a=0.005):
         # s = self.top_speed
         # r = self.reverse_top_speeed
         # a = self.acceleration_stat
@@ -66,57 +66,53 @@ class Driver:
 
         self.is_on_ground = self.pos[1] - ground_height < self.distance_to_ground_threshold
 
-        #self.direction_unitvec*self.gas_force
-
-
-
         if self.is_on_ground:
 
             # Gas and Reverse
             if self.inputs["gas"]:
-                if self.vel_xz < 0:
-                    self.vel_xz *= 0.9
-                self.vel_xz += self.gas_force
+                if self.speed < 0:
+                    # Gives more responsive gas after going reverse
+                    self.speed *= 0.9
+                self.speed += self.gas_force
             if self.inputs["reverse"]:
-                if self.vel_xz > 0:
-                    self.vel_xz *= 0.9
-                self.vel_xz -= self.gas_force
+                self.speed -= self.gas_force
 
 
 
-
-            vel_dependance = 2/(1+np.exp(-2*self.get_speed(self.vel_xz)))-1
+            # Get direction vector
+            vel_dependance = 2/(1+np.exp(-2*self.get_speed(self.speed)))-1
             self.omega = -self.inputs["turn_dir"]*self.turn_speed*vel_dependance
+            self.direction_unitvec = rotation_matrix(np.array([0,1,0]), self.omega) @ self.direction_unitvec
             
             # now update unit direction vector from turning
-            normal_vector = self.mapmaster.terrainGrid.get_normal_vector(self.pos) 
-            self.direction_unitvec = rotation_matrix(normal_vector, self.omega) @ self.direction_unitvec
-
-            # normal force 
-            nf = normal_vector
-            nf[1] = 0 # normal force only account for horizontal directions
-            self.slope_force = 5*np.dot(nf, self.direction_unitvec)
-            self.vel_xz += self.slope_force # this is the projection of the normal force on the direction vector
+            normal_vector = self.mapmaster.terrainGrid.get_normal_vector(self.pos)
+            normal_vector[1] = 0 # normal force only account for horizontal directions
+            slope_dir = np.dot(normal_vector, self.direction_unitvec)
+            if slope_dir == 0:
+                self.slope_speed = 0
+            else:
+                self.slope_speed = (5*slope_dir)**2 * np.abs(slope_dir) / slope_dir
+            self.speed += self.slope_speed # How slope effects speed
             
             # Friction and Brake
             if not self.inputs["gas"] and not self.inputs["reverse"]:
-                self.vel_xz *= 0.95
+                self.speed *= 0.95
             if self.inputs["brake"]:
-                self.vel_xz *= 0.5
+                self.speed *= 0.8
                 # Full Stop
-                if np.abs(self.vel_xz) < 0.1:
-                    self.vel_xz = 0
+                if np.abs(self.speed) < 0.1:
+                    self.speed = 0
 
 
         if self.pos[1] > ground_height:
-            self.vel_y += -self.gravity * self.dt / 100
+            self.vel_y += -self.gravity * self.dt / 50
         else:
             self.vel_y = (self.pos[1] - ground_height)
             if self.vel_y < 0:
                 self.vel_y = 0
 
-        self.vel_xz = np.clip(self.vel_xz, -self.max_momentum, self.max_momentum)
-        vel_final = self.direction_unitvec*self.get_speed(self.vel_xz)
+        self.speed = np.clip(self.speed, -self.max_momentum, self.max_momentum)
+        vel_final = self.direction_unitvec*self.get_speed(self.speed)
         vel_final[1] = self.vel_y
 
         self.pos += vel_final * self.dt

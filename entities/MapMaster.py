@@ -63,9 +63,9 @@ class MapMaster:
                     f"FPS: {round(clock.get_fps(), 2)}",
                     f"Debug State: {player.gameDebugState.name}",
                     f"Is on Ground: {player.is_on_ground}",
-                    f"x: {round(player.vel_xz)}",
-                    f"f(x): {round(player.get_speed(player.vel_xz), 2)}",
-                    f"slope_force: {round(player.slope_force, 2)}",
+                    f"x: {round(player.speed)}",
+                    f"f(x): {round(player.get_speed(player.speed), 2)}",
+                    f"slope_force: {round(player.slope_speed, 2)}",
                     f"y_velocity: {round(player.vel_y, 2)}",
                 ]
                 draw_debug_text(screen, debug_text, (255, 255, 255))
