@@ -10,9 +10,9 @@ class LocalPlayer(Driver):
         super().__init__(mapmaster, pos = pos, direction_unitvec = direction_unitvec)
         self.controller: Controller = Controller()
         self.camera = Camera(*pos, np.atan2(direction_unitvec[2], direction_unitvec[0]), nx = windowsize[0], ny = windowsize[1])
-        self.camera_height = 0.05
-        self.camera_distance = 0.2
-        self.camera_theta = 0.1
+        self.camera_height = 0.2
+        self.camera_distance = 0.3
+        self.camera_theta = 0.2
         self.gameDebugState: GameDebugState = GameDebugState(0)
 
 
