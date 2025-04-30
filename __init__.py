@@ -41,7 +41,7 @@ from entities import LocalPlayer, TerrainGrid
 local_player = LocalPlayer(mapMaster, windowsize=screen.get_size())
 mapMaster.local_players.append(local_player)
 mapMaster.drivers.append(local_player)
-mapMaster.terrainGrid = TerrainGrid(3, 3, grid_spacing=0.1, nx=50, nz=50)
+mapMaster.terrainGrid = TerrainGrid(3, 3, grid_spacing=0.1, nx=25, nz=25)
 
 
 

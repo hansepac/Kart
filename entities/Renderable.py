@@ -51,17 +51,32 @@ class DriverSprite(Renderable):
     def __init__(self, driver_object, camera):
         super().__init__()
         self.homoloc = driver_object.get_homo_pos() 
+        self.driver_object = driver_object
 
         # initially calculate screenloc and depth
         self.screenloc = camera.getScreenCoords([self.homoloc])[0]
         self.screen_depth = self.screenloc[2]
 
+
+        shadow_loc = self.homoloc
+        shadow_loc[1] = self.driver_object.mapmaster.terrainGrid.get_ground_height(self.driver_object.pos)
+        self.shadow_loc = camera.getScreenCoords([shadow_loc])[0]
+
+
+        self.carImg = pg.image.load('assets/car1_basic.png')
+
     def recalculate_screen_pos(self, camera):
         self.screenloc = camera.getScreenCoords([self.homoloc])[0]
+        shadow_loc = self.homoloc
+        shadow_loc[1] = self.driver_object.mapmaster.terrainGrid.get_ground_height(self.driver_object.pos)
+        self.shadow_loc = camera.getScreenCoords([shadow_loc])[0]
 
     def draw(self, screen):
         if np.linalg.norm(self.screenloc) > 1:
-            pg.draw.circle(screen, (255,255,255), (self.screenloc[0], self.screenloc[1]), 20)
+            pg.draw.circle(screen, (50, 50, 50), (self.shadow_loc[0], self.shadow_loc[1]), 5)
+            scaled_img = pg.transform.scale(self.carImg, (self.carImg.get_width() // 3, self.carImg.get_height() // 3))
+            img_rect = scaled_img.get_rect(center=(self.screenloc[0], self.screenloc[1]))
+            screen.blit(scaled_img, img_rect)
 
         
 
