@@ -7,8 +7,10 @@ class Driver:
         self.pos = pos
         self.vel = np.array([0, 0, 0], dtype=float)
         self.acc = np.array([0, 0, 0], dtype=float)
+        self.omega = 0 # azimuthal velocity
         self.direction_unitvec = direction_unitvec
         self.rank = 0
+        self.is_on_ground = True
 
         self.mapmaster = mapmaster
 
@@ -18,7 +20,7 @@ class Driver:
         self.turn_speed = 0.08 # also should depend on speed
         self.dt = 1/30
         self.gravity = 10
-        self.distance_to_ground_threshold = 0.0001
+        self.distance_to_ground_threshold = 0.01
         self.mass = 1
         self.friction_coef = 0.3 # may depend on terrain
 
@@ -50,30 +52,39 @@ class Driver:
         return np.array([*self.pos, 1])
 
     def updatePosition(self):
+
+        ground_height = self.mapmaster.terrainGrid.get_ground_height(self.pos)
+
+        self.is_on_ground = self.pos[1] - ground_height < self.distance_to_ground_threshold
+
         # First take in inputs to define acceleration
         Force = np.zeros(3)
 
-        if self.inputs["gas"]:
-            Force += self.direction_unitvec*self.gas_force
-        if self.inputs["reverse"]:
-            Force += -self.direction_unitvec*self.gas_force
-
-        # now update unit direction vector from turning
-        normal_vector = self.mapmaster.terrainGrid.get_normal_vector(self.pos) 
-        self.direction_unitvec = rotation_matrix(normal_vector, -self.turn_speed*self.inputs["turn_dir"]) @ self.direction_unitvec
-
-        
-        ground_height = self.mapmaster.terrainGrid.get_ground_height(self.pos)
         # pseudo vertical forces
-        # nf = np.zeros(3)
-        # if self.pos[1] - ground_height < self.distance_to_ground_threshold:
-        #     # normal force 
-        #     nf = normal_vector*self.gravity/normal_vector[1] # scale so it cancels gravity
-        #     nf[1] = 0 # normal force only account for horizontal directions
-        #     Force += nf*0.1
-        # else:
-        #     # gravity
-        #     Force += np.array([0, -self.gravity, 0])
+        nf = np.zeros(3)
+
+        if self.is_on_ground:
+
+            if self.inputs["gas"]:
+                Force += self.direction_unitvec*self.gas_force
+            if self.inputs["reverse"]:
+                Force += -self.direction_unitvec*self.gas_force
+
+            vel_dependance = 2/(1+np.exp(-2*np.linalg.norm(self.vel)))-1
+            self.omega = -self.inputs["turn_dir"]*self.turn_speed*vel_dependance
+            
+            # now update unit direction vector from turning
+            normal_vector = self.mapmaster.terrainGrid.get_normal_vector(self.pos) 
+            self.direction_unitvec = rotation_matrix(normal_vector, self.omega) @ self.direction_unitvec
+
+            # normal force 
+            nf = normal_vector*self.gravity/normal_vector[1] # scale so it cancels gravity
+            nf[1] = 0 # normal force only account for horizontal directions
+            Force += nf*0.1
+
+        else:
+            # gravity
+            Force += np.array([0, -self.gravity, 0])
         
         # insert friction here 
         # Force += - self.vel/np.linalg.norm(self.vel)*np.linalg.norm(nf)*self.friction_coef # mu N in the - vhat direction
@@ -94,6 +105,7 @@ class Driver:
         # clip ground if below
         if self.pos[1] < ground_height:
             self.pos[1] = ground_height
+            # self.vel[1] = 0
 
         
     def returnCurrentSprite(self):

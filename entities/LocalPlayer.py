@@ -22,7 +22,9 @@ class LocalPlayer(Driver):
             self.camera.theta = -np.atan2(self.camera_height, self.camera_distance)
             self.camera.phi = np.atan2(self.direction_unitvec[2], self.direction_unitvec[0]) + np.pi/2
             
-            cam_pos = self.pos - self.camera_distance*self.direction_unitvec/np.linalg.norm(self.direction_unitvec) + np.array([0, 1, 0])*self.camera_height
+            horizontal_unitvec = self.direction_unitvec/np.linalg.norm(self.direction_unitvec)
+            horizontal_unitvec[1] = 0
+            cam_pos = self.pos - self.camera_distance*horizontal_unitvec + np.array([0, 1, 0])*self.camera_height
             self.camera.x = cam_pos[0]
             self.camera.y = cam_pos[1]
             self.camera.z = cam_pos[2]

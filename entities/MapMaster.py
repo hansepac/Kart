@@ -58,6 +58,7 @@ class MapMaster:
                     f"Camera Angle: {player.camera.phi}, {player.camera.theta}",
                     f"FPS: {round(clock.get_fps(), 2)}",
                     f"Debug State: {player.gameDebugState.name}",
+                    f"Is on Ground: {player.is_on_ground}"
                 ]
                 draw_debug_text(screen, debug_text, (255, 255, 255))
 
