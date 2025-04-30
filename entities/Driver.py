@@ -5,8 +5,9 @@ class Driver:
     # this is any racing character, AI or player
     def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0])):
         self.pos = pos
-        self.vel = np.array([0, 0, 0], dtype=float)
-        self.acc = np.array([0, 0, 0], dtype=float)
+        self.vel_xz = 0
+        self.vel_y = 0
+        self.acc_y = 0
         self.omega = 0 # azimuthal velocity
         self.direction_unitvec = direction_unitvec
         self.rank = 0
@@ -18,6 +19,8 @@ class Driver:
         self.normal = np.array([0, 1, 0])
         self.gas_force = 2 # actually this needs to depend on velocity or things blow up
         self.turn_speed = 0.08 # also should depend on speed
+        self.slope_force = 0
+        self.max_momentum = 1500
         self.dt = 1/30
         self.gravity = 10
         self.distance_to_ground_threshold = 0.1
@@ -47,6 +50,12 @@ class Driver:
     def control(self, events):
         return self.inputs
     
+    def get_speed(self, x, s = 0.4, r=0.2, a=0.005):
+        # s = self.top_speed
+        # r = self.reverse_top_speeed
+        # a = self.acceleration_stat
+        return (s+r)/(1+np.exp(-a*(x-np.log((s+r)/r-1)/a)))-r
+    
 
     def get_homo_pos(self):
         return np.array([*self.pos, 1])
@@ -57,20 +66,26 @@ class Driver:
 
         self.is_on_ground = self.pos[1] - ground_height < self.distance_to_ground_threshold
 
-        # First take in inputs to define acceleration
-        Force = np.zeros(3)
+        #self.direction_unitvec*self.gas_force
 
-        # pseudo vertical forces
-        nf = np.zeros(3)
+
 
         if self.is_on_ground:
 
+            # Gas and Reverse
             if self.inputs["gas"]:
-                Force += self.direction_unitvec*self.gas_force
+                if self.vel_xz < 0:
+                    self.vel_xz *= 0.9
+                self.vel_xz += self.gas_force
             if self.inputs["reverse"]:
-                Force += -self.direction_unitvec*self.gas_force
+                if self.vel_xz > 0:
+                    self.vel_xz *= 0.9
+                self.vel_xz -= self.gas_force
 
-            vel_dependance = 2/(1+np.exp(-2*np.linalg.norm(self.vel)))-1
+
+
+
+            vel_dependance = 2/(1+np.exp(-2*self.get_speed(self.vel_xz)))-1
             self.omega = -self.inputs["turn_dir"]*self.turn_speed*vel_dependance
             
             # now update unit direction vector from turning
@@ -78,43 +93,37 @@ class Driver:
             self.direction_unitvec = rotation_matrix(normal_vector, self.omega) @ self.direction_unitvec
 
             # normal force 
-            nf = normal_vector*self.gravity/normal_vector[1] # scale so it cancels gravity
+            nf = normal_vector
             nf[1] = 0 # normal force only account for horizontal directions
-            Force += nf*0.02
-
+            self.slope_force = 5*np.dot(nf, self.direction_unitvec)
+            self.vel_xz += self.slope_force # this is the projection of the normal force on the direction vector
             
-        else:
-            # gravitity
-            # Force += np.array([0, -self.gravity, 0])
-            pass
+            # Friction and Brake
+            if not self.inputs["gas"] and not self.inputs["reverse"]:
+                self.vel_xz *= 0.95
+            if self.inputs["brake"]:
+                self.vel_xz *= 0.5
+                # Full Stop
+                if np.abs(self.vel_xz) < 0.1:
+                    self.vel_xz = 0
 
-        # insert friction here 
-        if np.linalg.norm(self.vel) != 0:
-            vhat = self.vel/np.linalg.norm(self.vel)
-            Force += - vhat*np.linalg.norm(nf)*self.friction_coef # mu N in the - vhat direction
-
-
-
-        # now update dynamics
-        if not self.inputs["drift"]:
-            # pseudo turning
-            # if not drifting, just match direction vector (projective)
-            self.direction_unitvec /= np.linalg.norm(self.direction_unitvec)
-            self.vel = (self.vel @ self.direction_unitvec) * self.direction_unitvec
 
         if self.pos[1] > ground_height:
-            Force += np.array([0, -self.gravity, 0])
+            self.vel_y += -self.gravity * self.dt / 100
+        else:
+            self.vel_y = (self.pos[1] - ground_height)
+            if self.vel_y < 0:
+                self.vel_y = 0
 
-        self.acc = Force / self.mass
-        self.vel += self.acc * self.dt 
-        self.pos += self.vel * self.dt
+        self.vel_xz = np.clip(self.vel_xz, -self.max_momentum, self.max_momentum)
+        vel_final = self.direction_unitvec*self.get_speed(self.vel_xz)
+        vel_final[1] = self.vel_y
+
+        self.pos += vel_final * self.dt
 
         # clip ground if below
         if self.pos[1] < ground_height:
             self.pos[1] = ground_height
-
-            if self.vel[1] < 0:
-                self.vel[1] *= -0.3
 
         
     def returnCurrentSprite(self):
