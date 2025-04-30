@@ -34,9 +34,10 @@ class MapMaster:
             # make renderables
             all_renderables = []
 
-            # add drivers (including this one)
+            # add drivers (excluding this one)
             for driver in self.drivers:
-                all_renderables.append(DriverSprite(driver, player.camera))
+                if player != driver:
+                    all_renderables.append(DriverSprite(driver, player.camera))
 
             # add a renderable for each triangle
             this_terrain = self.terrainGrid.get_grid_tile(player.pos)
@@ -50,6 +51,9 @@ class MapMaster:
             # now draw renderables
             for renderable in all_renderables:
                 renderable.draw(screen)
+
+            # now do this player last
+            DriverSprite(player, player.camera).draw(screen)
            
             # draw debug text
             if player.gameDebugState != player.gameDebugState.NORMAL:

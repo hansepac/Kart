@@ -16,11 +16,11 @@ class Driver:
 
         # temporary
         self.normal = np.array([0, 1, 0])
-        self.gas_force = 1 # actually this needs to depend on velocity or things blow up
+        self.gas_force = 2 # actually this needs to depend on velocity or things blow up
         self.turn_speed = 0.08 # also should depend on speed
         self.dt = 1/30
         self.gravity = 10
-        self.distance_to_ground_threshold = 0.01
+        self.distance_to_ground_threshold = 0.1
         self.mass = 1
         self.friction_coef = 0.3 # may depend on terrain
 
@@ -80,14 +80,18 @@ class Driver:
             # normal force 
             nf = normal_vector*self.gravity/normal_vector[1] # scale so it cancels gravity
             nf[1] = 0 # normal force only account for horizontal directions
-            Force += nf*0.1
+            Force += nf*0.02
 
+            
         else:
-            # gravity
-            Force += np.array([0, -self.gravity, 0])
-        
+            # gravitity
+            # Force += np.array([0, -self.gravity, 0])
+            pass
+
         # insert friction here 
-        # Force += - self.vel/np.linalg.norm(self.vel)*np.linalg.norm(nf)*self.friction_coef # mu N in the - vhat direction
+        if np.linalg.norm(self.vel) != 0:
+            vhat = self.vel/np.linalg.norm(self.vel)
+            Force += - vhat*np.linalg.norm(nf)*self.friction_coef # mu N in the - vhat direction
 
 
 
@@ -98,6 +102,9 @@ class Driver:
             self.direction_unitvec /= np.linalg.norm(self.direction_unitvec)
             self.vel = (self.vel @ self.direction_unitvec) * self.direction_unitvec
 
+        if self.pos[1] > ground_height:
+            Force += np.array([0, -self.gravity, 0])
+
         self.acc = Force / self.mass
         self.vel += self.acc * self.dt 
         self.pos += self.vel * self.dt
@@ -105,7 +112,9 @@ class Driver:
         # clip ground if below
         if self.pos[1] < ground_height:
             self.pos[1] = ground_height
-            # self.vel[1] = 0
+
+            if self.vel[1] < 0:
+                self.vel[1] *= -0.3
 
         
     def returnCurrentSprite(self):
