@@ -85,7 +85,26 @@ class DriverSprite(Renderable):
             img_rect = scaled_img.get_rect(center=(self.screenloc[0], self.screenloc[1]))
             screen.blit(scaled_img, img_rect)
 
+class FlagSprite(Renderable):
+    def __init__(self, flag_pos, camera, isCurrent = False):
+        super().__init__()
+        self.homoloc = np.array([*flag_pos, 1]) 
         
+        # initially calculate screenloc and depth
+        self.screenloc = camera.getScreenCoords([self.homoloc])[0]
+        self.screen_depth = self.screenloc[2]
+
+        self.flagImg = pg.image.load('assets/flag_green.png') if isCurrent else pg.image.load('assets/flag_red.png')
+
+    def recalculate_screen_pos(self, camera):
+        self.screenloc = camera.getScreenCoords([self.homoloc])[0]
+
+    def draw(self, screen):
+        if np.linalg.norm(self.screenloc) > 1:
+            scale_factor = 0.3*(1 - self.screen_depth)**(-1)
+            scaled_img = pg.transform.scale(self.flagImg, (self.flagImg.get_width() / scale_factor, self.flagImg.get_height() / scale_factor))
+            img_rect = scaled_img.get_rect(center=(self.screenloc[0], self.screenloc[1] - int(scaled_img.get_height()*0.6)))
+            screen.blit(scaled_img, img_rect)
 
 # basically the same as the dots we used earlier. 
 class SimpleSprite(Renderable):
