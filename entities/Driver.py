@@ -21,6 +21,7 @@ class Driver:
         self.drift_angle = 0
         self.drift_boost = 0.5
         self.drift_direction = 0
+        self.drift_turn_speed_mult = 2
         self.drift_speed_mult = 0.6
 
         self.mapmaster = mapmaster
@@ -86,6 +87,7 @@ class Driver:
         return np.array([*self.pos, 1])
 
     def updatePosition(self, dt):
+        dt*=30
 
         ground_height = self.terrainDynamic.get_ground_height(self.pos)
 
@@ -102,9 +104,9 @@ class Driver:
                 if self.speed < 0:
                     # Gives more responsive gas after going reverse
                     self.speed *= 0.9
-                self.speed += self.gas_force
+                self.speed += self.gas_force * dt
             if self.inputs["reverse"]:
-                self.speed -= self.gas_force
+                self.speed -= self.gas_force * dt
 
 
             # DRIFTING / TURNING
@@ -112,7 +114,7 @@ class Driver:
                 if self.drift_direction == 0:
                     self.drift_direction = np.sign(self.inputs["turn_dir"])
                 # Turn
-                self.drift_turn(self.turn_speed)
+                self.drift_turn(self.turn_speed, dt)
             elif self.inputs["drift"] and self.speed < 100:
                     # Too slow, reset drift, no boost
                     self.reset_drift(boost = False)
@@ -120,7 +122,7 @@ class Driver:
                 # Once drift has been released, reset drift
                 if self.drift_direction != 0:
                     self.reset_drift(boost = True)
-                self.omega = -self.inputs["turn_dir"]*self.turn_speed*self.get_acc(self.speed)
+                self.omega = -self.inputs["turn_dir"]*self.turn_speed*self.get_acc(self.speed) * dt
             
             # Get direction vector
             self.direction_unitvec = rotation_matrix(np.array([0,1,0]), self.omega) @ self.direction_unitvec
@@ -159,12 +161,12 @@ class Driver:
             # DRIFTING / TURNING
             air_turn_speed = 0.01
             if self.inputs["drift"] and self.drift_direction != 0 and self.speed > 100:
-                self.drift_turn(air_turn_speed, add_time = True)
+                self.drift_turn(air_turn_speed, dt, add_time = True)
             else:
                 # Once drift has been released, reset drift
                 if self.drift_direction != 0:
                     self.reset_drift(boost = True)
-                self.omega = -self.inputs["turn_dir"]*air_turn_speed*self.get_acc(self.speed)
+                self.omega = -self.inputs["turn_dir"]*air_turn_speed*self.get_acc(self.speed) * dt
 
             # Get direction vector
             self.direction_unitvec = rotation_matrix(np.array([0,1,0]), self.omega) @ self.direction_unitvec
@@ -175,7 +177,7 @@ class Driver:
 
         # If above ground, apply gravity
         if self.pos[1] > ground_height:
-            self.vel_y += -self.gravity * self.dt / 40
+            self.vel_y += -self.gravity * dt / 30 / 40
         else:
             # If below ground, apply floaty force
             floaty_constant = 1
@@ -190,8 +192,8 @@ class Driver:
         self.speed = np.clip(self.speed, -max_speed, max_speed)
         vel_final = self.direction_unitvec*self.get_speed(self.speed) + self.other_forces
         vel_final[1] = self.vel_y
-
-        self.pos += vel_final * self.dt
+        print(dt)
+        self.pos += vel_final / 30
 
         # clip ground if below
         if self.pos[1] < ground_height:
@@ -201,12 +203,12 @@ class Driver:
     def returnCurrentSprite(self):
         pass
 
-    def drift_turn(self, turn_speed, add_time = True):
-        modified_turn_dir = np.clip(self.inputs["turn_dir"], min(2*self.drift_direction, 0.5*self.drift_direction), max(2*self.drift_direction, 0.5*self.drift_direction))
-        self.omega = -(modified_turn_dir) * turn_speed * self.get_acc(self.speed)
+    def drift_turn(self, turn_speed, dt, add_time = True):
+        modified_turn_dir = np.clip(self.inputs["turn_dir"] + self.drift_direction, min(self.drift_turn_speed_mult*self.drift_direction, 0.5*self.drift_direction), max(self.drift_turn_speed_mult*self.drift_direction, 0.5*self.drift_direction))
+        self.omega = -(modified_turn_dir) * turn_speed * self.get_acc(self.speed) * dt
         # Add to drift time and angle
         if add_time:
-            self.drift_time += self.dt
+            self.drift_time += dt
         self.drift_angle += abs(self.omega)
 
     def reset_drift(self, boost = False):
