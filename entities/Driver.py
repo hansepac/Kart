@@ -80,7 +80,7 @@ class Driver:
     def get_homo_pos(self):
         return np.array([*self.pos, 1])
 
-    def updatePosition(self):
+    def updatePosition(self, dt):
 
         ground_height = self.terrainDynamic.get_ground_height(self.pos)
 

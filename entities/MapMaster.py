@@ -7,18 +7,35 @@ from entities.Terrain import TerrainDynamic
 from entities.Renderable import DriverSprite, TerrainTriangle
 
 class MapMaster:
-    def __init__(self, terrainDynamicCoordinator):
+    def __init__(self, terrainDynamicCoordinator, track_origin=np.array([0,0,0]), num_flags=12):
         self.drivers = []
         self.local_players = []
         self.player_screen_dimensions = []
         self.items = []
         self.terrainDynamicCoordinator = terrainDynamicCoordinator
 
+        # create flags
+        self.flags = [track_origin]
+        self.num_flags = num_flags
+        phi = np.random.uniform(-np.pi, np.pi)
+        for _ in range(num_flags):
+            # rotate, move, and add a new flag
+            phi += np.random.uniform(-np.pi/2, np.pi/2)
+            r = np.random.uniform(1, 8)
+            new_flag_pos = self.flags[-1] + r*np.array([np.cos(phi), 0, np.sin(phi)])
+            new_flag_pos[1] = self.terrainDynamicCoordinator.get_rough_height(new_flag_pos) # put it on the ground 
+            self.flags.append(new_flag_pos)
 
-    def update(self, events, DEBUG):
+
+    def update(self, events, dt, DEBUG):
         for driver in self.drivers:
             driver.control(events)
-            driver.updatePosition()
+            driver.updatePosition(dt)
+
+            # check for flag indices
+            if np.linalg.norm(driver.pos - self.flags[driver.flag_index]) < 0.2:
+                driver.flag_index += 1
+
         for player in self.local_players:
             player.terrainDynamic.update_grid(player.pos)
             player.updateCameraPositon()
