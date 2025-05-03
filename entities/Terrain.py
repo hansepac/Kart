@@ -15,6 +15,16 @@ class TerrainDynamicCoordinator:
         self.height_base_large = np.random.randint(0, 1000)
         self.detail_base = np.random.randint(0, 1000)
 
+    def get_rough_height(self, pos_3d):
+        '''Returns the height of the perlin function. It might not line up exactly with the ground because the 
+        ground is quantized to a grid, and has linear interpolation, while this doesn't take into account the grid.'''
+
+        return self.noise_height_large* pnoise2((pos_3d[0]/self.grid_spacing) * self.noise_density_large, 
+                                                            (pos_3d[2]/self.grid_spacing) * self.noise_density_large, 
+                                base=self.height_base_large) + self.detail_height* pnoise2((pos_3d[0]/self.grid_spacing) * self.detail_density, 
+                                                                                    (pos_3d[2]/self.grid_spacing) * self.detail_density, 
+                                                                                    base=self.detail_base)
+
 
 
 

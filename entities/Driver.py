@@ -12,7 +12,10 @@ class Driver:
         self.phi = 0
         self.direction_unitvec = direction_unitvec
         self.other_forces = np.zeros(3) # other forces acting on the car
-        self.rank = 0
+
+        self.flag_index = 0 
+
+
         self.is_on_ground = True
         self.drift_time = 0
         self.drift_angle = 0
@@ -25,6 +28,8 @@ class Driver:
         terrainPos = pos.copy()
         terrainPos[1] = 0
         self.terrainDynamic = self.mapmaster.createTerrainDynamic(terrainPos)
+
+        # TODO: clean out the old stuff here
 
         # temporary
         self.normal = np.array([0, 1, 0])
