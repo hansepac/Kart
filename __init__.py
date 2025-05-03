@@ -42,9 +42,6 @@ mapMaster.addLocalPlayer()
 
 
 
-
-
-
 # Don't mind this stuff for now
 
 # DEV = True
