@@ -56,9 +56,9 @@ class MapMaster:
             DriverSprite(player, player.camera).draw(screen)
 
             window_x, window_y = screen.get_size()
-            radius = 150
-            draw_speedometer(screen, abs(player.speed), (radius+30,radius+30), radius=radius, max_val=player.max_momentum, tick_step=100)
-            show_keyboard_ui(screen, (0, window_y-300))
+            radius = 100
+            draw_speedometer(screen, abs(player.speed/10), (radius+30,radius+30), radius=radius, max_val=player.max_momentum/10, tick_step=10)
+            show_keyboard_ui(screen, (window_x-350, window_y-350))
            
             # draw debug text
             if player.gameDebugState != player.gameDebugState.NORMAL:
@@ -73,6 +73,12 @@ class MapMaster:
                     f"f(x): {round(player.get_speed(player.speed), 2)}",
                     f"slope_force: {round(player.slope_speed, 2)}",
                     f"y_velocity: {round(player.vel_y, 2)}"
+                ]
+                draw_debug_text(screen, debug_text, (255, 255, 255))
+
+            else:
+                debug_text = [
+                    f"FPS: {round(clock.get_fps(), 2)}"
                 ]
                 draw_debug_text(screen, debug_text, (255, 255, 255))
 

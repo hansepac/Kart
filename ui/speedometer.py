@@ -1,7 +1,7 @@
 import pygame as pg
 from math import radians, cos, sin
 
-font = pg.font.SysFont(None, 30)
+font = pg.font.SysFont(None, 20)
 
 # --- Helper Functions ---
 def angle_for_value(value, min_val, max_val):
@@ -17,7 +17,7 @@ def draw_speedometer(screen, value, center:tuple, radius = 150, min_val = 0, max
                     radians(135), radians(45), 5)
 
     # Draw ticks
-    for val in range(min_val, max_val + 1, tick_step):
+    for val in range(min_val, round(max_val) + 1, tick_step):
         ang = angle_for_value(val, min_val, max_val)
         x1 = center[0] + cos(ang) * (radius - 10)
         y1 = center[1] - sin(ang) * (radius - 10)
@@ -41,5 +41,5 @@ def draw_speedometer(screen, value, center:tuple, radius = 150, min_val = 0, max
     pg.draw.circle(screen, (255, 255, 255), center, 5)
 
     # Value text
-    val_text = font.render(f"Speed: {round(value, -1)}", True, (255, 255, 255))
+    val_text = font.render(f"Speed: {round(value)}", True, (255, 255, 255))
     screen.blit(val_text, (center[0] - val_text.get_width()//2, center[1] - 50))
