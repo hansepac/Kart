@@ -15,6 +15,7 @@ class Driver:
 
         self.flag_index = 0 
 
+        self.impact_dt = 0
 
         self.is_on_ground = True
         self.drift_time = 0
@@ -43,6 +44,7 @@ class Driver:
         self.distance_to_ground_threshold = 0.01
         self.mass = 1
         self.friction_coef = 0.3 # may depend on terrain
+
 
 
         self.inputs = {
@@ -104,9 +106,10 @@ class Driver:
                 if self.speed < 0:
                     # Gives more responsive gas after going reverse
                     self.speed *= 0.9
-                self.speed += self.gas_force * dt
+                self.speed += self.gas_force * dt * np.clip((100+self.speed)/self.speed, 1, 10)
+                print(np.clip((100+self.speed)/self.speed, 1, 10))
             if self.inputs["reverse"]:
-                self.speed -= self.gas_force * dt
+                self.speed -= self.gas_force * dt * np.clip((50+self.speed)/self.speed, 1, 10)
 
 
             # DRIFTING / TURNING
@@ -143,10 +146,13 @@ class Driver:
             self.other_forces += slippy_constant*self.get_speed(self.speed)**2*(no_y_normal_vector - np.dot(no_y_normal_vector, self.direction_unitvec) * self.direction_unitvec)
 
             # IMPACT IMPULSE
-            # if impact:
-            #     if self.vel_y < 0:
-            #         impact_effect = max(abs(self.vel_y)**0.5, 0.25)
-            #         self.other_forces += no_y_normal_vector*impact_effect
+            if impact and self.impact_dt < 0:
+                self.impact_dt = 1
+                if self.vel_y < 0:
+                    impact_effect = max(abs(self.vel_y)**0.5, 0.25)
+                    self.other_forces += no_y_normal_vector*impact_effect
+            else:
+                self.impact_dt -= dt
             
             # Friction and Brake
             if not self.inputs["gas"] and not self.inputs["reverse"]:
@@ -192,7 +198,6 @@ class Driver:
         self.speed = np.clip(self.speed, -max_speed, max_speed)
         vel_final = self.direction_unitvec*self.get_speed(self.speed) + self.other_forces
         vel_final[1] = self.vel_y
-        print(dt)
         self.pos += vel_final / 30
 
         # clip ground if below
