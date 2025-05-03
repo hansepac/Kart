@@ -61,11 +61,11 @@ class LocalPlayer(Driver):
         draw_speedometer(self.screen, abs(self.speed/10), (radius+30,radius+30), radius=radius, max_val=self.max_momentum/10, tick_step=10)
         show_keyboard_ui(self.screen, (window_x-350, window_y-350))
         
+        # this stuff is termporary for minimap
         displacement_unit_vec = np.array([self.mapmaster.flags[self.flag_index][0], self.mapmaster.flags[self.flag_index][2]]) - np.array([self.pos[0], self.pos[2]])
-        displacement_unit_vec /= np.linalg.norm(displacement_unit_vec)
-        direction_2d = np.array([self.direction_unitvec[0], self.direction_unitvec[2]])
-        direction_2d /= np.linalg.norm(direction_2d)
-        angle_between = np.arccos(direction_2d @ displacement_unit_vec)
+        phi1 = np.atan2(self.direction_unitvec[2], self.direction_unitvec[0])
+        phi2 = np.atan2(displacement_unit_vec[1], displacement_unit_vec[0])
+        angle_between = (phi2 - phi1 ) % (2*np.pi)
         
         draw_minimap(self.screen, angle_between, (radius+30,3*radius+60), radius=80)
         

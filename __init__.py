@@ -36,8 +36,7 @@ camera = Camera(y=5, z = 0, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
 from entities import MapMaster
 from entities import TerrainDynamicCoordinator
 mapMaster = MapMaster(terrainDynamicCoordinator=TerrainDynamicCoordinator(grid_spacing=0.1), screen=screen)
-mapMaster.addLocalPlayer()
-mapMaster.addLocalPlayer()
+mapMaster.addLocalPlayer() # call this again to add another player
 
 
 
