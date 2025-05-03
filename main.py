@@ -21,7 +21,6 @@ while game_running:
     pg.display.update()
     # WAIT TILL FRAME RATE
     delta_time = 0.001 * clock.tick(FRAME_RATE)
-    print(delta_time)
 
 # Cleanup and close
 # client_socket.close()
