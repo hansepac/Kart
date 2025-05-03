@@ -2,16 +2,17 @@ import pygame as pg
 from numpy import array, pi
 import numpy as np
 from ui import draw_debug_text, draw_speedometer, show_keyboard_ui
+from entities.Terrain import TerrainDynamic
 
 from entities.Renderable import DriverSprite, TerrainTriangle
 
 class MapMaster:
-    def __init__(self):
+    def __init__(self, terrainDynamicCoordinator):
         self.drivers = []
         self.local_players = []
         self.player_screen_dimensions = []
         self.items = []
-        self.terrainGrid = None
+        self.terrainDynamicCoordinator = terrainDynamicCoordinator
 
 
     def update(self, events, DEBUG):
@@ -19,6 +20,7 @@ class MapMaster:
             driver.control(events)
             driver.updatePosition()
         for player in self.local_players:
+            player.terrainDynamic.update_grid(player.pos)
             player.updateCameraPositon()
 
       
@@ -41,9 +43,8 @@ class MapMaster:
                     all_renderables.append(DriverSprite(driver, player.camera))
 
             # add a renderable for each triangle
-            for terrain_tile in self.terrainGrid.get_adjacent_tiles(player.pos, player.direction_unitvec):
-                for i in range(len(terrain_tile.homo_triangles)):
-                    all_renderables.append(TerrainTriangle(terrain_tile.homo_triangles[i], player.camera, colour=terrain_tile.colours_triangles[i], skycolour=sky_color)) # creating renderables calculates screen location
+            for i in range(len(player.terrainDynamic.homo_triangles)):
+                all_renderables.append(TerrainTriangle(player.terrainDynamic.homo_triangles[i], player.camera, colour=player.terrainDynamic.colours_triangles[i], skycolour=sky_color)) # creating renderables calculates screen location
                 
             # sort renderables according to depth
             all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)
@@ -83,6 +84,8 @@ class MapMaster:
                 draw_debug_text(screen, debug_text, (255, 255, 255))
 
 
-
+    def createTerrainDynamic(self, pos=np.array([0, 0, 0])):
+        # creates a terrain dynamic. The driver class uses this. 
+        return TerrainDynamic(coordinator=self.terrainDynamicCoordinator, center=pos)
 
         

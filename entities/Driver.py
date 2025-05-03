@@ -22,6 +22,10 @@ class Driver:
 
         self.mapmaster = mapmaster
 
+        terrainPos = pos.copy()
+        terrainPos[1] = 0
+        self.terrainDynamic = self.mapmaster.createTerrainDynamic(terrainPos)
+
         # temporary
         self.normal = np.array([0, 1, 0])
         self.gas_force = 2 # actually this needs to depend on velocity or things blow up
@@ -78,7 +82,7 @@ class Driver:
 
     def updatePosition(self):
 
-        ground_height = self.mapmaster.terrainGrid.get_ground_height(self.pos)
+        ground_height = self.terrainDynamic.get_ground_height(self.pos)
 
         impact = not self.is_on_ground and self.pos[1] - ground_height < self.distance_to_ground_threshold
 
@@ -116,11 +120,13 @@ class Driver:
             # Get direction vector
             self.direction_unitvec = rotation_matrix(np.array([0,1,0]), self.omega) @ self.direction_unitvec
             
+
             # GROUND FORCES
             normal_vector = self.mapmaster.terrainGrid.get_normal_vector(self.pos)
             no_y_normal_vector = normal_vector.copy()
             no_y_normal_vector[1] = 0 # normal force only account for horizontal directions
             slope_dir = np.dot(no_y_normal_vector, self.direction_unitvec)
+
             if slope_dir == 0:
                 self.slope_speed = 0
             else:
