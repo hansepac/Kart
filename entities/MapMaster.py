@@ -14,7 +14,6 @@ class MapMaster:
         self.items = []
         self.terrainDynamicCoordinator = terrainDynamicCoordinator
 
-
         # create flags
         self.flags = [track_origin]
         self.num_flags = num_flags
@@ -28,10 +27,10 @@ class MapMaster:
             self.flags.append(new_flag_pos)
 
 
-    def update(self, events, DEBUG):
+    def update(self, events, dt, DEBUG):
         for driver in self.drivers:
             driver.control(events)
-            driver.updatePosition()
+            driver.updatePosition(dt)
 
             # check for flag indices
             if np.linalg.norm(driver.pos - self.flags[driver.flag_index]) < 0.2:
