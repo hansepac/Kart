@@ -9,6 +9,7 @@ class Driver:
         self.vel_y = 0
         self.acc_y = 0
         self.omega = 0 # azimuthal velocity
+        self.phi = 0
         self.direction_unitvec = direction_unitvec
         self.rank = 0
         self.is_on_ground = True
@@ -83,6 +84,8 @@ class Driver:
             vel_dependance = 2/(1+np.exp(-2*self.get_speed(self.speed)))-1
             self.omega = -self.inputs["turn_dir"]*self.turn_speed*vel_dependance
             self.direction_unitvec = rotation_matrix(np.array([0,1,0]), self.omega) @ self.direction_unitvec
+            # Needed for camera on local player (and probably other things in the future)
+            self.phi = np.arctan2(self.direction_unitvec[2], self.direction_unitvec[0]) + np.pi/2
             
             # now update unit direction vector from turning
             normal_vector = self.mapmaster.terrainGrid.get_normal_vector(self.pos)
