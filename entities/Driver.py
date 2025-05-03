@@ -130,10 +130,10 @@ class Driver:
             self.other_forces += slippy_constant*self.get_speed(self.speed)**2*(no_y_normal_vector - np.dot(no_y_normal_vector, self.direction_unitvec) * self.direction_unitvec)
 
             # IMPACT IMPULSE
-            if impact:
-                if self.vel_y < 0:
-                    impact_effect = np.clip(abs(self.vel_y)**0.5, -0.15, 0.2)
-                    self.other_forces += no_y_normal_vector*impact_effect
+            # if impact:
+            #     if self.vel_y < 0:
+            #         impact_effect = max(abs(self.vel_y)**0.5, 0.25)
+            #         self.other_forces += no_y_normal_vector*impact_effect
             
             # Friction and Brake
             if not self.inputs["gas"] and not self.inputs["reverse"]:
@@ -147,10 +147,7 @@ class Driver:
             # IN AIR
             # DRIFTING / TURNING
             air_turn_speed = 0.01
-            if self.inputs["drift"] and (self.drift_direction != 0 or self.inputs["turn_dir"] != 0) and self.speed > 100:
-                if self.drift_direction == 0:
-                    self.drift_direction = np.sign(self.inputs["turn_dir"])
-                # Get direction vector
+            if self.inputs["drift"] and self.drift_direction != 0 and self.speed > 100:
                 self.drift_turn(air_turn_speed)
             else:
                 # Once drift has been released, reset drift
