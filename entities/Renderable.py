@@ -78,7 +78,9 @@ class DriverSprite(Renderable):
 
     def draw(self, screen):
         if np.linalg.norm(self.screenloc) > 1:
-            pg.draw.circle(screen, (50, 50, 50), (self.shadow_loc[0], self.shadow_loc[1]), 5)
+            shadow_rect = pg.Rect(0,0,80,40)
+            shadow_rect.center = (self.shadow_loc[0], self.shadow_loc[1])
+            pg.draw.ellipse(screen, (50, 50, 50), shadow_rect)
             scaled_img = pg.transform.scale(self.carImg, (self.carImg.get_width() // 3, self.carImg.get_height() // 3))
             img_rect = scaled_img.get_rect(center=(self.screenloc[0], self.screenloc[1]))
             screen.blit(scaled_img, img_rect)
