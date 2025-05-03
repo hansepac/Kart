@@ -32,9 +32,12 @@ class LocalPlayer(Driver):
         all_renderables = []
 
         # add drivers (excluding this one)
+        player_renderable = None
         for driver in self.mapmaster.drivers:
-            if self != driver:
-                all_renderables.append(DriverSprite(driver, self.camera))
+            new_driver_renderable = DriverSprite(driver, self.camera)
+            if self == driver:
+                player_renderable = new_driver_renderable
+            all_renderables.append(new_driver_renderable)
 
         # add a renderable for each triangle
         for i in range(len(self.terrainDynamic.homo_triangles)):
@@ -45,14 +48,13 @@ class LocalPlayer(Driver):
             all_renderables.append(FlagSprite(self.mapmaster.flags[i], self.camera, isCurrent=(self.flag_index == i)))
 
         # sort renderables according to depth
+        all_renderables = calculateRenderableScreenCoords(self.camera, all_renderables)
+        player_renderable.screen_depth = 0.0 # move player to top of the stack
         all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)
 
         # now draw renderables
         for renderable in all_renderables:
             renderable.draw(self.screen)
-
-        # now do this player last
-        DriverSprite(self, self.camera).draw(self.screen)
 
         window_x, window_y = self.screen.get_size()
         radius = 100
