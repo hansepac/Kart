@@ -40,10 +40,9 @@ class MapMaster:
                     all_renderables.append(DriverSprite(driver, player.camera))
 
             # add a renderable for each triangle
-            this_terrain = self.terrainGrid.get_grid_tile(player.pos)
-            if this_terrain is not None:
-                for i in range(len(this_terrain.homo_triangles)):
-                    all_renderables.append(TerrainTriangle(this_terrain.homo_triangles[i], player.camera, colour=this_terrain.colours_triangles[i])) # creating renderables calculates screen location
+            for terrain_tile in self.terrainGrid.get_adjacent_tiles(player.pos):
+                for i in range(len(terrain_tile.homo_triangles)):
+                    all_renderables.append(TerrainTriangle(terrain_tile.homo_triangles[i], player.camera, colour=terrain_tile.colours_triangles[i])) # creating renderables calculates screen location
                 
             # sort renderables according to depth
             all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)
