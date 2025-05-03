@@ -62,7 +62,7 @@ class Driver:
 
     def updatePosition(self):
 
-        ground_height = self.mapmaster.terrainGrid.get_ground_height(self.pos)
+        ground_height = self.mapmaster.terrainDynamic.get_ground_height(self.pos)
 
         self.is_on_ground = self.pos[1] - ground_height < self.distance_to_ground_threshold
 
@@ -85,7 +85,7 @@ class Driver:
             self.direction_unitvec = rotation_matrix(np.array([0,1,0]), self.omega) @ self.direction_unitvec
             
             # now update unit direction vector from turning
-            normal_vector = self.mapmaster.terrainGrid.get_normal_vector(self.pos)
+            normal_vector = self.mapmaster.terrainDynamic.get_normal_vector(self.pos)
             normal_vector[1] = 0 # normal force only account for horizontal directions
             slope_dir = np.dot(normal_vector, self.direction_unitvec)
             if slope_dir == 0:

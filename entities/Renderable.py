@@ -64,7 +64,7 @@ class DriverSprite(Renderable):
 
 
         shadow_loc = self.homoloc
-        shadow_loc[1] = self.driver_object.mapmaster.terrainGrid.get_ground_height(self.driver_object.pos)
+        shadow_loc[1] = self.driver_object.mapmaster.terrainDynamic.get_ground_height(self.driver_object.pos)
         self.shadow_loc = camera.getScreenCoords([shadow_loc])[0]
 
 
@@ -73,7 +73,7 @@ class DriverSprite(Renderable):
     def recalculate_screen_pos(self, camera):
         self.screenloc = camera.getScreenCoords([self.homoloc])[0]
         shadow_loc = self.homoloc
-        shadow_loc[1] = self.driver_object.mapmaster.terrainGrid.get_ground_height(self.driver_object.pos)
+        shadow_loc[1] = self.driver_object.mapmaster.terrainDynamic.get_ground_height(self.driver_object.pos)
         self.shadow_loc = camera.getScreenCoords([shadow_loc])[0]
 
     def draw(self, screen):

@@ -11,10 +11,13 @@ class MapMaster:
         self.local_players = []
         self.player_screen_dimensions = []
         self.items = []
-        self.terrainGrid = None
+        self.terrainDynamic = None
 
 
     def update(self, events, DEBUG):
+
+        # TODO: We need to have a terrainDynamic coordinator because each player will have their own terrainDynamic
+
         for driver in self.drivers:
             driver.control(events)
             driver.updatePosition()
@@ -41,9 +44,8 @@ class MapMaster:
                     all_renderables.append(DriverSprite(driver, player.camera))
 
             # add a renderable for each triangle
-            for terrain_tile in self.terrainGrid.get_adjacent_tiles(player.pos, player.direction_unitvec):
-                for i in range(len(terrain_tile.homo_triangles)):
-                    all_renderables.append(TerrainTriangle(terrain_tile.homo_triangles[i], player.camera, colour=terrain_tile.colours_triangles[i], skycolour=sky_color)) # creating renderables calculates screen location
+            for i in range(len(self.terrainDynamic.homo_triangles)):
+                all_renderables.append(TerrainTriangle(self.terrainDynamic.homo_triangles[i], player.camera, colour=self.terrainDynamic.colours_triangles[i], skycolour=sky_color)) # creating renderables calculates screen location
                 
             # sort renderables according to depth
             all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)
