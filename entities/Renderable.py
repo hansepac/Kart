@@ -29,7 +29,8 @@ def calculateRenderableScreenCoords(camera, renderables_list):
 
     homo_coords_list = []
     for renderable in filtered_renderables:
-        homo_coords_list += renderable.homo_coords
+        if not isinstance(renderable, TerrainTriangle):
+            homo_coords_list += renderable.homo_coords
 
     screen_coords = camera.getScreenCoords(homo_coords_list)
 
@@ -42,26 +43,28 @@ def calculateRenderableScreenCoords(camera, renderables_list):
 
     j = 0
     for i in range(len(filtered_renderables)):
-        # after we calculate all the screen coords, pass them out again. 
-        jn = len(filtered_renderables[i].homo_coords) + j
-        filtered_renderables[i].screen_coords = screen_coords[j:jn]
-        filtered_renderables[i].screen_depth = np.average(np.array(screen_coords[j:jn])[:, 2])
-
         # check to see if it needs triangle rendering
-        # if isinstance(filtered_renderables[i], TerrainTriangle):
-        #     row_norms = np.linalg.norm(screen_coords[j:jn], axis=1)
-        #     if np.sum(row_norms > 0) < len(filtered_renderables[i].homo_coords):
-                # do triangle rendering
-        #        pass
-                # filtered_renderables[i].triangle_rendering = True
-                # filtered_renderables[i].screen_coords = camera.drawTriangle(filtered_renderables[i].homo_coords)
-                # if len(filtered_renderables[i].screen_coords) > 1:
-                #     filtered_renderables[i].screen_depth = np.average(np.array(filtered_renderables[i].screen_coords)[:, 2])
-                # elif len(filtered_renderables[i].screen_coords) == 1:
-                #     filtered_renderables[i].screen_depth = filtered_renderables[i].screen_coords[0][2]
-                # else:
-                #     filtered_renderables[i].screen_depth = 0
-        j = jn
+        if isinstance(filtered_renderables[i], TerrainTriangle):
+            # pass
+            # row_norms = np.linalg.norm(screen_coords[j:jn], axis=1)
+            # if np.sum(row_norms > 0) < len(filtered_renderables[i].homo_coords):
+            # do triangle rendering
+            filtered_renderables[i].triangle_rendering = True
+            filtered_renderables[i].screen_coords = camera.drawTriangle(filtered_renderables[i].homo_coords)
+            if len(filtered_renderables[i].screen_coords) > 1:
+                filtered_renderables[i].screen_depth = np.average(np.array(filtered_renderables[i].screen_coords)[:, 2])
+            elif len(filtered_renderables[i].screen_coords) == 1:
+                filtered_renderables[i].screen_depth = filtered_renderables[i].screen_coords[0][2]
+            else:
+                filtered_renderables[i].screen_depth = 0
+
+        else:
+            # after we calculate all the screen coords, pass them out again. 
+            jn = len(filtered_renderables[i].homo_coords) + j
+            filtered_renderables[i].screen_coords = screen_coords[j:jn]
+            filtered_renderables[i].screen_depth = np.average(np.array(screen_coords[j:jn])[:, 2])
+            
+            j = jn
 
 
     return filtered_renderables
