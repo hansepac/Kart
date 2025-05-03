@@ -18,7 +18,7 @@ class LocalPlayer(Driver):
 
     def updateCameraPositon(self):
         if self.gameDebugState != self.gameDebugState.FLY_DEBUG:
-            ground_height = self.mapmaster.terrainGrid.get_ground_height(np.array([self.camera.x, self.camera.y, self.camera.z]))
+            ground_height = self.terrainDynamic.get_ground_height(np.array([self.camera.x, self.camera.y, self.camera.z]))
             camera_theta_move_rate =  np.clip(self.camera_height/1.5/np.clip(self.camera.y - ground_height, self.camera_height, self.camera_height*10), 0.01, 1)
             camera_phi_offset = min(self.phi - self.camera.phi, self.phi - self.camera.phi + 2*np.pi, self.phi - self.camera.phi - 2*np.pi, key=abs)
             camera_phi_move_rate = np.clip((abs(camera_phi_offset)/np.pi*2), 0.01, 1)

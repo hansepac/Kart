@@ -122,7 +122,7 @@ class Driver:
             
 
             # GROUND FORCES
-            normal_vector = self.mapmaster.terrainGrid.get_normal_vector(self.pos)
+            normal_vector = self.terrainDynamic.get_normal_vector(self.pos)
             no_y_normal_vector = normal_vector.copy()
             no_y_normal_vector[1] = 0 # normal force only account for horizontal directions
             slope_dir = np.dot(no_y_normal_vector, self.direction_unitvec)
@@ -154,7 +154,7 @@ class Driver:
             # DRIFTING / TURNING
             air_turn_speed = 0.01
             if self.inputs["drift"] and self.drift_direction != 0 and self.speed > 100:
-                self.drift_turn(air_turn_speed)
+                self.drift_turn(air_turn_speed, add_time = True)
             else:
                 # Once drift has been released, reset drift
                 if self.drift_direction != 0:
@@ -170,7 +170,7 @@ class Driver:
 
         # If above ground, apply gravity
         if self.pos[1] > ground_height:
-            self.vel_y += -self.gravity * self.dt / 50
+            self.vel_y += -self.gravity * self.dt / 40
         else:
             # If below ground, apply floaty force
             floaty_constant = 1
@@ -196,11 +196,12 @@ class Driver:
     def returnCurrentSprite(self):
         pass
 
-    def drift_turn(self, turn_speed):
+    def drift_turn(self, turn_speed, add_time = True):
         modified_turn_dir = np.clip(self.inputs["turn_dir"], min(2*self.drift_direction, 0.5*self.drift_direction), max(2*self.drift_direction, 0.5*self.drift_direction))
         self.omega = -(modified_turn_dir) * turn_speed * self.get_acc(self.speed)
         # Add to drift time and angle
-        self.drift_time += self.dt
+        if add_time:
+            self.drift_time += self.dt
         self.drift_angle += abs(self.omega)
 
     def reset_drift(self, boost = False):
