@@ -24,6 +24,8 @@ def calculateRenderableScreenCoords(camera, renderables_list):
     the computation can be done in C rather than with a python for loop. '''
 
     # filter by if renderable is even in view
+    '''It turned to to be faster to just render all of them rather than taking the time to 
+    figure out if they should be rendered or not. '''
     filtered_renderables = renderables_list # [r for r in renderables_list if is_on_visible_side(r, np.array([camera.x, camera.y, camera.z]), np.array([np.sin(camera.phi)*np.cos(camera.theta), np.sin(camera.theta), -np.cos(camera.theta)*np.cos(camera.phi)]))]
 
 
@@ -45,6 +47,8 @@ def calculateRenderableScreenCoords(camera, renderables_list):
     for i in range(len(filtered_renderables)):
         # check to see if it needs triangle rendering
         if isinstance(filtered_renderables[i], TerrainTriangle):
+            '''It ended up being faster to just do triangle rendering for every triangle,
+            rather than taking the time to figure out if it actually need that or not. '''
             # pass
             # row_norms = np.linalg.norm(screen_coords[j:jn], axis=1)
             # if np.sum(row_norms > 0) < len(filtered_renderables[i].homo_coords):
@@ -118,11 +122,13 @@ class DriverSprite(Renderable):
         self.carImg = pg.image.load('assets/car1_basic.png')
 
     def draw(self, screen):
+
+        if np.linalg.norm(self.screen_coords[1]) > 0:
+                shadow_rect = pg.Rect(0,0,80,40)
+                shadow_rect.center = (self.screen_coords[1][0], self.screen_coords[1][1])
+                pg.draw.ellipse(screen, (50, 50, 50), shadow_rect)
+
         if np.linalg.norm(self.screen_coords[0]) > 1:
-            shadow_rect = pg.Rect(0,0,80,40)
-            shadow_rect.center = (self.screen_coords[1][0], self.screen_coords[1][1])
-            pg.draw.ellipse(screen, (50, 50, 50), shadow_rect)
-            
             scaled_img = pg.transform.scale(self.carImg, (self.carImg.get_width() // 3, self.carImg.get_height() // 3))
             img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1]))
             screen.blit(scaled_img, img_rect)
