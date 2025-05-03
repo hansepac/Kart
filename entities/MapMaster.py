@@ -1,7 +1,7 @@
 import pygame as pg
 from numpy import array, pi
 import numpy as np
-from utils.ui import draw_debug_text, draw_speedometer
+from ui import draw_debug_text, draw_speedometer, show_keyboard_ui
 
 from entities.Renderable import DriverSprite, TerrainTriangle
 
@@ -57,7 +57,8 @@ class MapMaster:
 
             window_x, window_y = screen.get_size()
             radius = 150
-            draw_speedometer(screen, abs(player.speed), (radius,window_y-radius), radius=radius, max_val=player.max_momentum, tick_step=100)
+            draw_speedometer(screen, abs(player.speed), (radius+30,radius+30), radius=radius, max_val=player.max_momentum, tick_step=100)
+            show_keyboard_ui(screen, (0, window_y-300))
            
             # draw debug text
             if player.gameDebugState != player.gameDebugState.NORMAL:
