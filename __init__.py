@@ -34,14 +34,11 @@ camera = Camera(y=5, z = 0, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
 
 # MapMaster
 from entities import MapMaster
-mapMaster = MapMaster()
-
-# Create Dots
-from entities import LocalPlayer, TerrainDynamic
+from entities import LocalPlayer, TerrainDynamicCoordinator
+mapMaster = MapMaster(terrainDynamicCoordinator=TerrainDynamicCoordinator(grid_spacing=0.1))
 local_player = LocalPlayer(mapMaster, windowsize=screen.get_size())
 mapMaster.local_players.append(local_player)
 mapMaster.drivers.append(local_player)
-mapMaster.terrainDynamic = TerrainDynamic(grid_spacing=0.1)
 
 
 

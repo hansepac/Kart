@@ -1,53 +1,62 @@
 import numpy as np
 from noise import pnoise2
 
-class TerrainDynamic:
+class TerrainDynamicCoordinator:
     def __init__(self, grid_spacing = 1, noise_density_large = 0.01, detail_density = 0.12, noise_height_large = 3, detail_height = 0.3, radius=20, center = np.array([0, 0, 0])):
         self.grid_spacing = grid_spacing
         self.noise_density_large = noise_density_large
         self.detail_density = detail_density
-        self.noise_density_large = noise_height_large
+        self.noise_height_large = noise_height_large
         self.detail_height = detail_height
         self.radius = radius
-        self.center = center
 
         # generate seed here so it makes it continuous
         self.colour_base = np.random.randint(0, 1000)
         self.height_base_large = np.random.randint(0, 1000)
         self.detail_base = np.random.randint(0, 1000)
 
-        self.points = np.zeros((radius*2, radius*2, 3))
-        self.homo_points = np.zeros((radius*2, radius*2, 4))
-        self.colours_grid = np.zeros((radius*2, radius*2, 3))
+
+
+
+class TerrainDynamic:
+    def __init__(self, coordinator, center = np.array([0, 0, 0])):
+        self.coordinator = coordinator
+
+
+        self.points = np.zeros((self.coordinator.radius*2, self.coordinator.radius*2, 3))
+        self.homo_points = np.zeros((self.coordinator.radius*2, self.coordinator.radius*2, 4))
+        self.colours_grid = np.zeros((self.coordinator.radius*2, self.coordinator.radius*2, 3))
+
+        self.center = center
 
         # generate initial area
-        for i in range(radius*2):
-            for j in range(radius*2):
+        for i in range(self.coordinator.radius*2):
+            for j in range(self.coordinator.radius*2):
                 self.calculate_perlin_point(i, j)
 
         # pack homogeneous triangles
         self.pack_triangles()
 
     def calculate_perlin_point(self, i, j):
-        self.points[j, i, 0] = (i - self.radius)*self.grid_spacing + self.center[0]
-        self.points[j, i, 2] = (j - self.radius)*self.grid_spacing + self.center[2]
-        self.points[j, i, 1] = self.noise_height_large* pnoise2((i - self.radius + self.center[0]/self.grid_spacing) * self.noise_density_large, 
-                                                            (j - self.radius + self.center[2]/self.grid_spacing) * self.noise_density_large, 
-                                base=self.height_base_large) + self.detail_height* pnoise2((i - self.radius + self.center[0]/self.grid_spacing) * self.detail_density, 
-                                                                                    (j - self.radius + self.center[2]/self.grid_spacing) * self.detail_density, 
-                                                                                    base=self.detail_base)
+        self.points[j, i, 0] = (i - self.coordinator.radius)*self.coordinator.grid_spacing + self.center[0]
+        self.points[j, i, 2] = (j - self.coordinator.radius)*self.coordinator.grid_spacing + self.center[2]
+        self.points[j, i, 1] = self.coordinator.noise_height_large* pnoise2((i - self.coordinator.radius + self.center[0]/self.coordinator.grid_spacing) * self.coordinator.noise_density_large, 
+                                                            (j - self.coordinator.radius + self.center[2]/self.coordinator.grid_spacing) * self.coordinator.noise_density_large, 
+                                base=self.coordinator.height_base_large) + self.coordinator.detail_height* pnoise2((i - self.coordinator.radius + self.center[0]/self.coordinator.grid_spacing) * self.coordinator.detail_density, 
+                                                                                    (j - self.coordinator.radius + self.center[2]/self.coordinator.grid_spacing) * self.coordinator.detail_density, 
+                                                                                    base=self.coordinator.detail_base)
 
         self.homo_points[j, i, 0:3] = self.points[j, i, :]
         self.homo_points[j, i, 3] = 1
 
-        self.colours_grid[j, i, :] = get_color_on_spectrum(pnoise2((i - self.radius + self.center[0]/self.grid_spacing)* self.noise_density_large, 
-                                                                    (j - self.radius + self.center[2]/self.grid_spacing) * self.noise_density_large, base=self.colour_base))    
+        self.colours_grid[j, i, :] = get_color_on_spectrum(pnoise2((i - self.coordinator.radius + self.center[0]/self.coordinator.grid_spacing)* self.coordinator.noise_density_large, 
+                                                                    (j - self.coordinator.radius + self.center[2]/self.coordinator.grid_spacing) * self.coordinator.noise_density_large, base=self.coordinator.colour_base))    
 
     def pack_triangles(self):
         homo_triangles = []
         colours = []
-        for i in range(2*self.radius - 1):
-            for j in range(2*self.radius - 1):
+        for i in range(2*self.coordinator.radius - 1):
+            for j in range(2*self.coordinator.radius - 1):
                 triangle = [self.homo_points[j, i, :], self.homo_points[j, i+1, :], self.homo_points[j+1, i, :]]
                 homo_triangles.append(triangle)
                 colours.append(self.colours_grid[j, i, :])
@@ -58,22 +67,10 @@ class TerrainDynamic:
         self.colours_triangles = colours
 
     def update_grid(self, pos_3d):
-        while abs(pos_3d[0] - self.center) > self.grid_spacing:
-            if pos_3d[0] - self.center > 0:
+        while abs(pos_3d[0] - self.center[0]) > self.coordinator.grid_spacing:
+            if pos_3d[0] - self.center[0] > 0:
                 # move the center
-                self.center += np.array([self.grid_spacing, 0, 0])
-
-                # shift existing points
-                self.points[:, 1:, :] = self.points[:, :-1, :]
-                self.homo_points[:, 1:, :] = self.homo_points[:, :-1, :]
-                self.colours_grid[:, 1:, :] = self.colours_grid[:, :-1, :]
-
-                # calculate new points
-                for j in range(2*self.radius):
-                    self.calculate_perlin_point(-1, j)
-            else:
-                # move the center
-                self.center -= np.array([self.grid_spacing, 0, 0])
+                self.center += np.array([self.coordinator.grid_spacing, 0, 0])
 
                 # shift existing points
                 self.points[:, :-1, :] = self.points[:, 1:, :]
@@ -81,8 +78,46 @@ class TerrainDynamic:
                 self.colours_grid[:, :-1, :] = self.colours_grid[:, 1:, :]
 
                 # calculate new points
-                for j in range(2*self.radius):
+                for j in range(2*self.coordinator.radius):
+                    self.calculate_perlin_point(2*self.coordinator.radius - 1, j)
+            else:
+                # move the center
+                self.center -= np.array([self.coordinator.grid_spacing, 0, 0])
+
+                # shift existing points
+                self.points[:, 1:, :] = self.points[:, :-1, :]
+                self.homo_points[:, 1:, :] = self.homo_points[:, :-1, :]
+                self.colours_grid[:, 1:, :] = self.colours_grid[:, :-1, :]
+
+                # calculate new points
+                for j in range(2*self.coordinator.radius):
                     self.calculate_perlin_point(0, j)
+
+        while abs(pos_3d[2] - self.center[2]) > self.coordinator.grid_spacing:
+            if pos_3d[2] - self.center[2] > 0:
+                # move the center
+                self.center += np.array([0, 0, self.coordinator.grid_spacing])
+
+                # shift existing points
+                self.points[:-1, :, :] = self.points[1:, :, :]
+                self.homo_points[:-1, :, :] = self.homo_points[1:, :, :]
+                self.colours_grid[:-1, :, :] = self.colours_grid[1:, :, :]
+
+                # calculate new points
+                for i in range(2*self.coordinator.radius):
+                    self.calculate_perlin_point(i, 2*self.coordinator.radius - 1)
+            else:
+                # move the center
+                self.center -= np.array([0, 0, self.coordinator.grid_spacing])
+
+                # shift existing points
+                self.points[1:, :, :] = self.points[:-1, :, :]
+                self.homo_points[1:, :, :] = self.homo_points[:-1, :, :]
+                self.colours_grid[1:, :, :] = self.colours_grid[:-1, :, :]
+
+                # calculate new points
+                for i in range(2*self.coordinator.radius):
+                    self.calculate_perlin_point(i, 0)
 
         # pack triangles again
         self.pack_triangles()
@@ -91,8 +126,8 @@ class TerrainDynamic:
     def get_normal_vector(self, pos_3d):
         if pos_3d[0] > self.points[0, 0, 0] and pos_3d[0] < self.points[0, -1, 0] and pos_3d[2] > self.points[0, 0, 2] and pos_3d[2] < self.points[-1, 0, 2]:
             # get grid indices to determine square of interest
-            i = int((pos_3d[0] - self.center[0])/self.grid_spacing + self.radius)
-            j = int((pos_3d[2] - self.center[2])/self.grid_spacing + self.radius)
+            i = int((pos_3d[0] - self.center[0])/self.coordinator.grid_spacing + self.coordinator.radius)
+            j = int((pos_3d[2] - self.center[2])/self.coordinator.grid_spacing + self.coordinator.radius)
 
             # determine distance to both triangle edges
             d1 = np.linalg.norm(pos_3d[[0, 2]] - self.points[j, i, :][[0, 2]])
@@ -119,8 +154,8 @@ class TerrainDynamic:
     def get_ground_height(self, pos_3d):
         if pos_3d[0] > self.points[0, 0, 0] and pos_3d[0] < self.points[0, -1, 0] and pos_3d[2] > self.points[0, 0, 2] and pos_3d[2] < self.points[-1, 0, 2]:
             # get grid indices to determine square of interest
-            i = int((pos_3d[0] - self.center[0])/self.grid_spacing + self.radius)
-            j = int((pos_3d[2] - self.center[2])/self.grid_spacing + self.radius)
+            i = int((pos_3d[0] - self.center[0])/self.coordinator.grid_spacing + self.coordinator.radius)
+            j = int((pos_3d[2] - self.center[2])/self.coordinator.grid_spacing + self.coordinator.radius)
 
             # determine distance to both triangle edges
             d1 = np.linalg.norm(pos_3d[[0, 2]] - self.points[j, i, :][[0, 2]])
