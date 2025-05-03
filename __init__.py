@@ -10,7 +10,7 @@ pg.display.init()
 pg.init()
 
 # GAME SETUP
-FRAME_RATE = 60
+FRAME_RATE = 120
 CAMERA_SCALE = 60
 DEBUG = True
 
@@ -19,7 +19,7 @@ clock = pg.time.Clock()
 
 # Game States
 from utils.states import GameState, OnlineState, GameDebugState
-gameState = GameState(1) # {0: TITLE, 1: IN_GAME}
+gameState = GameState(1) # {0: TITLE, 1: IN_GAME, 2: CHAR_SELECT, 3: SETTINGS}
 onlineState = OnlineState(1) # {0: LOCAL, 1: ONLINE}
 
 # Keyboard
