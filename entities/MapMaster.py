@@ -26,7 +26,8 @@ class MapMaster:
     def draw(self, screen, clock):
         for player in self.local_players:
             angle = (player.camera.theta + pi/2)/pi
-            screen.fill((0, round(angle*200), round(angle*255)))
+            sky_color = (0, round(angle*200), round(angle*255))
+            screen.fill(sky_color)
 
             # iterate through players is iterating through cameras. 
             player.camera.updateCamMat() # update camera matrices once per frame
@@ -40,9 +41,9 @@ class MapMaster:
                     all_renderables.append(DriverSprite(driver, player.camera))
 
             # add a renderable for each triangle
-            for terrain_tile in self.terrainGrid.get_adjacent_tiles(player.pos):
+            for terrain_tile in self.terrainGrid.get_adjacent_tiles(player.pos, player.direction_unitvec):
                 for i in range(len(terrain_tile.homo_triangles)):
-                    all_renderables.append(TerrainTriangle(terrain_tile.homo_triangles[i], player.camera, colour=terrain_tile.colours_triangles[i])) # creating renderables calculates screen location
+                    all_renderables.append(TerrainTriangle(terrain_tile.homo_triangles[i], player.camera, colour=terrain_tile.colours_triangles[i], skycolour=sky_color)) # creating renderables calculates screen location
                 
             # sort renderables according to depth
             all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)

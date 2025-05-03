@@ -53,16 +53,37 @@ class TerrainGrid:
         else:
             return 0
         
-    def get_adjacent_tiles(self, pos_3d):
+    def get_adjacent_tiles(self, pos_3d, direction_vec):
         # get grid indices to determine tile of interest
         i = int((pos_3d[0] - self.origin[0])/self.grid_spacing/self.nx)
         j = int((pos_3d[2] - self.origin[2])/self.grid_spacing/self.nz)
         if i > -1 and j > -1 and i < self.num_x and j < self.num_z:
             jm = (j + 1) % self.num_z
             im = (i + 1) % self.num_x
-            return [self.grid[j-1][i], 
-                           self.grid[j][i-1], self.grid[j][i], self.grid[j][im], 
-                            self.grid[jm][i], ]
+            jm2 = (j + 2) % self.num_z 
+            im2 = (i + 2) % self.num_x
+
+            returnlist = [self.grid[j][i]]
+        
+            phi = np.atan2(direction_vec[2], direction_vec[0])
+            if phi < np.pi/4 and phi > -np.pi/4:
+                returnlist += [self.grid[j][im], self.grid[j-1][im], self.grid[jm][im], 
+                               self.grid[j-1][i], self.grid[jm][i], self.grid[j][i-1], 
+                               self.grid[j][im2], self.grid[j-1][im2], self.grid[jm][im2]] 
+            elif phi > np.pi/4 and phi < 3*np.pi/4:
+                returnlist += [self.grid[jm][i], self.grid[jm][i-1], self.grid[jm][im], 
+                               self.grid[j][i-1], self.grid[j][im], self.grid[j-1][i], 
+                               self.grid[jm2][i], self.grid[jm2][i-1], self.grid[jm2][im]]  
+            elif (phi > 3*np.pi/4 and phi < np.pi) or (phi > -np.pi and phi < -3*np.pi/4):
+                returnlist += [self.grid[j][i-1], self.grid[j-1][i-1], self.grid[jm][i-1], 
+                               self.grid[j-1][i], self.grid[jm][i], self.grid[j][im], 
+                               self.grid[j][i-2], self.grid[j-1][i-2], self.grid[jm][i-2]] 
+            else:
+                returnlist += [self.grid[j-1][i], self.grid[j-1][i-1], self.grid[j-1][im], 
+                               self.grid[j][i-1], self.grid[j][im], self.grid[jm][i], 
+                               self.grid[j-2][i], self.grid[j-2][i-1], self.grid[j-2][im]]  
+
+            return returnlist
         else:
             return []
 
