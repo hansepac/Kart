@@ -122,7 +122,7 @@ class Driver:
             
 
             # GROUND FORCES
-            normal_vector = self.mapmaster.terrainGrid.get_normal_vector(self.pos)
+            normal_vector = self.terrainDynamic.get_normal_vector(self.pos)
             no_y_normal_vector = normal_vector.copy()
             no_y_normal_vector[1] = 0 # normal force only account for horizontal directions
             slope_dir = np.dot(no_y_normal_vector, self.direction_unitvec)
