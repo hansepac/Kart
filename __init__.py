@@ -10,7 +10,7 @@ pg.display.init()
 pg.init()
 
 # GAME SETUP
-FRAME_RATE = 60
+FRAME_RATE = 120
 CAMERA_SCALE = 60
 DEBUG = True
 
