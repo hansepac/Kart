@@ -4,9 +4,9 @@ from utils.misc import create_id
 
 class Driver:
     # this is any racing character, AI or player
-    def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), is_alien = False):
+    def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), is_alien = False, id = create_id()):
         self.is_alien = is_alien
-        self.id = create_id()
+        self.id = id
         self.pos = pos
         self.speed = 0
         self.vel_y = 0

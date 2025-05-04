@@ -4,6 +4,7 @@ from .update import update
 from .draw import draw
 from utils.cores import Core, GameCore
 from entities import MapMaster
+from Server import Client
 
 gc = GameCore()
 
@@ -18,7 +19,6 @@ def game_init(c: Core):
         print(f"Server PID: {server_process.pid}")
 
         # Setup Client
-        from Server import Client
         gc.client = Client()
 
         gc.mapMaster = MapMaster(c.screen, is_server=True)
@@ -34,10 +34,9 @@ def game_init(c: Core):
         }
         
         # Update local mapMaster
-        # client.send_to_server(game_setup_json, "game_setup")
+        gc.client.send_to_server(game_setup_json, "game_setup")
     elif c.onlineState == c.onlineState.CLIENT:
         # Setup Client
-        
         gc.client = Client()
 
         gc.mapMaster = MapMaster(screen=c.screen)

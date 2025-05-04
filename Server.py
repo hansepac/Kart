@@ -1,6 +1,7 @@
 import socket
 import json
 import threading
+import time
 
 def is_connected(sock):
     try:
@@ -30,17 +31,19 @@ class Client:
     
     def connect_to_server(self):
         connect_attempts = 0
-        while connect_attempts < 5 and not is_connected(self.client_socket):
+        while connect_attempts < 3:
             try:
+                # Create a new socket each attempt
                 self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.client_socket.connect((self.server_host, self.server_port))
                 self.local_address = self.client_socket.getsockname()
+                return True
             except ConnectionRefusedError:
                 print("Connection refused. Retrying...")
                 connect_attempts += 1
-                if connect_attempts == 5:
-                    print("Failed to connect to server after 5 attempts.")
-                    return
+                time.sleep(0.5)
+        print(f"Failed to connect to server after {connect_attempts} attempts.")
+        return False
         
     def send_to_server(self, data, dtype: str = "live_data"):
         message = json.dumps({
@@ -101,26 +104,37 @@ class Server:
         self.broadcast_new_client(client.address)
 
         try:
+            buffer = ""
             while True:
-                message = client.socket.recv(1024).decode('utf-8')
-                if not message:
+                data = client.socket.recv(1024).decode('utf-8')
+                if not data:
                     break
-
-                # print(f"SERVER: Received message from {client.address}: {message}")
+                buffer += data
+                messages = buffer.split("\n\n")
                 
-                incoming_data = json.loads(message)
+                # Handle all complete messages
+                for msg in messages[:-1]:
+                    try:
+                        incoming_data = json.loads(msg)
+                        # print(f"SERVER: Received message from {client.address}: {incoming_data}")
 
-                if incoming_data["msg_type"] == "game_setup":
-                    # Handle game setup data
-                    client.game_setup = incoming_data["dat"]
-                    self.game_setup = incoming_data["dat"]
-                    print(f"SERVER: Game setup data from {client.address}: {client.game_setup}")
-                elif incoming_data["msg_type"] == "live_data":
-                    # Handle live data (player positions)
-                    client.live_data = incoming_data["dat"]
+                        if incoming_data["msg_type"] == "game_setup":
+                            # Handle game setup data
+                            client.game_setup = incoming_data["dat"]
+                            self.game_setup = incoming_data["dat"]
+                            print(f"SERVER: Game setup data from {client.address}: {client.game_setup}")
+                        elif incoming_data["msg_type"] == "live_data":
+                            # Handle live data (player positions)
+                            client.live_data = incoming_data["dat"]
 
-                # Broadcast updated positions to all clients
-                self.broadcast_data(incoming_data["dat"], dtype=incoming_data["msg_type"])
+                        # Broadcast updated positions to all clients
+                        self.broadcast_data(incoming_data["dat"], dtype=incoming_data["msg_type"], sender=client)
+                        # process the message (same as before)
+                    except json.JSONDecodeError as e:
+                        print(f"SERVER: JSON decode error: {e}")
+
+                # Keep last (possibly incomplete) part in buffer
+                buffer = messages[-1]
 
         except Exception as e:
             print(f"SERVER: Error handling client {client.address}: {e}")
@@ -131,28 +145,23 @@ class Server:
             client.socket.close()
             del client
 
-    def broadcast_data(self, data, dtype: str = "live_data"):
+    def broadcast_data(self, data, dtype: str = "live_data", sender: ClientData = None):
         """Send the current positions of all players to all clients."""
+        msg = json.dumps({
+            "msg_type": dtype,
+            "dat": data
+        }) + "\n\n"
+        
         for client in self.clients:
-            all_client_data = []  # Define the positions list here
-            for client2 in self.clients:
-                if client2 != client:
-                    all_client_data.append(data)
-
-            # Convert the list of positions to a JSON string
-            msg = json.dumps({
-                "msg_type": dtype,
-                "dat": all_client_data
-            }) + "\n\n"
-
             try:
-                client.socket.send(msg.encode('utf-8'))
+                if client != sender:
+                    client.socket.send(msg.encode('utf-8'))
+                else:
+                    client.socket.send((json.dumps({"msg_type": "ack", "dat": "ack"}) + "\n\n").encode('utf-8'))
             except Exception as e:
                 print(f"SERVER: Error sending to client: {e}")
-                print(data)
                 client.socket.close()
                 self.clients.remove(client)
-                del client
     
     def broadcast_new_client(self, address):
         msg = json.dumps({
@@ -205,7 +214,8 @@ class Server:
             print(f"SERVER: Active connections: {threading.active_count() - 1}")
             if len(self.clients) > 1:
                 if self.game_setup:
-                    self.broadcast_data(self.clients[0].game_setup, dtype="game_setup")
+                    print(f"BROADCAST GAME SETUP: {self.game_setup}")
+                    self.broadcast_data(self.game_setup, dtype="game_setup")
                 else:
                     NameError("Game setup not initialized yet.")
 
