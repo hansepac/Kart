@@ -107,7 +107,6 @@ class Driver:
                     # Gives more responsive gas after going reverse
                     self.speed *= 0.9
                 self.speed += self.gas_force * dt * np.clip((100+self.speed)/self.speed, 1, 10)
-                print(np.clip((100+self.speed)/self.speed, 1, 10))
             if self.inputs["reverse"]:
                 self.speed -= self.gas_force * dt * np.clip((50+self.speed)/self.speed, 1, 10)
 
