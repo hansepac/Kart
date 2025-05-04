@@ -1,11 +1,9 @@
-from __init__ import gameState
 import core.title as title
 import core.game as game
 
-def update(events, dt):
-    # Get all the latest key presses
-    # Run updates based on gameState
+def update(events, dt, gameState):
     if gameState == gameState.TITLE:
-        title.update(events)
+        gameState = title.update(events, dt, gameState)
     elif gameState == gameState.IN_GAME:
-        game.update(events, dt)
+        gameState = game.update(events, dt, gameState)
+    return gameState

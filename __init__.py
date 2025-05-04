@@ -14,28 +14,29 @@ FRAME_RATE = 120
 CAMERA_SCALE = 60
 DEBUG = True
 
-# INITIALIZE FRAME RATE STUFF
+# Init game clock
 clock = pg.time.Clock()
+
+# Get window size
+window_x, window_y = screen.get_size()
 
 # Game States
 from utils.states import GameState, OnlineState, GameDebugState
-gameState = GameState(1) # {0: TITLE, 1: IN_GAME, 2: CHAR_SELECT, 3: SETTINGS}
+gameState = GameState(0) # {0: TITLE, 1: CHAR_SELEC, 2: IN_GAME, 3: SETTINGS}
 onlineState = OnlineState(1) # {0: LOCAL, 1: ONLINE}
 
-# Keyboard
-pg.mouse.set_visible(False)
-pg.event.set_grab(True) 
+# Init Title Screen
+from ui import TitleScreen
+titleScreen = TitleScreen(screen, gameState, window_x, window_y)
 
 # Camera
 from entities import Camera
 from numpy import pi
-window_x, window_y = screen.get_size()
 camera = Camera(y=5, z = 0, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
 
 # MapMaster
 from entities import MapMaster
-from entities import TerrainDynamicCoordinator
-mapMaster = MapMaster(terrainDynamicCoordinator=TerrainDynamicCoordinator(grid_spacing=0.1), screen=screen)
+mapMaster = MapMaster(screen=screen)
 mapMaster.addLocalPlayer()
 mapMaster.addLocalPlayer(is_controller=True)
 

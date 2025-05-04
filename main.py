@@ -1,4 +1,4 @@
-from __init__ import FRAME_RATE, clock
+from __init__ import FRAME_RATE, clock, gameState
 import pygame as pg
 import core
 from input import game_end_check
@@ -10,6 +10,7 @@ game_running = True
 dt = 1/FRAME_RATE
 
 while game_running:
+    global gameState
     # WAIT TILL FRAME RATE
     dt = 0.001 * clock.tick(FRAME_RATE)
     # Get all events
@@ -17,9 +18,9 @@ while game_running:
     # Check if window "X" is pressed, or ESC
     game_running = game_end_check(events)
     # UPDATE ITEMS
-    core.update(events, dt)
+    gameState = core.update(events, dt, gameState)
     # DRAW SCREEN
-    core.draw()
+    core.draw(gameState)
     # UPDATE DISPLAY
     pg.display.update()
 
