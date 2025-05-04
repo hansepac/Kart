@@ -1,5 +1,6 @@
-from __init__ import screen, mapMaster, clock
+from __init__ import clock
+import core.game as game
 
 def draw():
-    mapMaster.draw(clock)
+    game.mapMaster.draw(clock)
 

@@ -21,27 +21,9 @@ clock = pg.time.Clock()
 window_x, window_y = screen.get_size()
 
 # Game States
-from utils.states import GameState, OnlineState, GameDebugState
+from utils.states import GameState, OnlineState
 gameState = GameState(0) # {0: TITLE, 1: CHAR_SELEC, 2: IN_GAME, 3: SETTINGS}
-onlineState = OnlineState(1) # {0: LOCAL, 1: ONLINE}
-
-# Init Title Screen
-from ui import TitleScreen
-titleScreen = TitleScreen(screen, gameState, window_x, window_y)
-
-# Camera
-from entities import Camera
-from numpy import pi
-camera = Camera(y=5, z = 0, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
-
-# MapMaster
-from entities import MapMaster
-mapMaster = MapMaster(screen=screen)
-mapMaster.addLocalPlayer()
-# mapMaster.addLocalPlayer(is_controller=True)
-
-
-
+onlineState = OnlineState(0) # {0: LOCAL, 1: CLIENT, 2: HOST}
 
 # Don't mind this stuff for now
 

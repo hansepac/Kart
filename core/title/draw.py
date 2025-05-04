@@ -1,4 +1,7 @@
-from __init__ import titleScreen
+import core
 
-def draw():
-    titleScreen.draw()
+def draw(gameState):
+    if gameState == gameState.TITLE:
+        core.titleScreen.draw()
+    elif gameState == gameState.JOIN:
+        core.joinGameScreen.draw()

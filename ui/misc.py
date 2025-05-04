@@ -13,4 +13,5 @@ def draw_debug_text(surface, lines, color, padding=10):
     for i, line in enumerate(lines):
         text_surface = font.render(line, True, color)
         surface.blit(text_surface, (x, y + i * line_height))
+        
 

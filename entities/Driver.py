@@ -1,9 +1,12 @@
 import numpy as np
 import pygame as pg
+from utils.misc import create_id
 
 class Driver:
     # this is any racing character, AI or player
-    def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0])):
+    def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), is_alien = False):
+        self.is_alien = is_alien
+        self.id = create_id()
         self.pos = pos
         self.speed = 0
         self.vel_y = 0
@@ -65,6 +68,22 @@ class Driver:
             "drift": False,
             "use_item": False
         }
+
+    def get_data(self):
+        return {
+            "id": self.id,
+            "pos": self.pos.tolist(),
+            "flag_index": self.flag_index,
+            "direction_unitvec": self.direction_unitvec.tolist(),
+            "is_on_ground": bool(self.is_on_ground),
+        }
+    
+    def update_from_server(self, data_json):
+        # update the driver from the server
+        self.pos = np.array(data_json["pos"])
+        self.flag_index = data_json["flag_index"]
+        self.direction_unitvec = np.array(data_json["direction_unitvec"])
+        self.is_on_ground = data_json["is_on_ground"]
 
     def control(self, events):
         return self.inputs
