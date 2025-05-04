@@ -3,19 +3,25 @@ from numpy import array, pi
 import numpy as np
 from entities.Terrain import TerrainDynamic
 from entities.LocalPlayer import LocalPlayer
-
+from entities.Terrain import TerrainDynamicCoordinator
 
 class MapMaster:
-    def __init__(self, terrainDynamicCoordinator, screen, track_origin = np.array([0, 0, 0]), num_flags = 12):
+    def __init__(self, screen, is_server = False):
         self.drivers = []
         self.local_players = []
         self.player_screen_dimensions = []
         self.items = []
-        self.terrainDynamicCoordinator = terrainDynamicCoordinator
-
+        self.terrainDynamicCoordinator = None
         self.screen = screen
+        self.is_server = is_server
 
-        # create flags
+        self.setup_game()
+
+    def setup_game(self, track_origin = np.array([0, 0, 0]), num_flags = 12, grid_spacing = 0.1):
+        # Create the terrain coordinator
+        self.terrainDynamicCoordinator=TerrainDynamicCoordinator(grid_spacing=grid_spacing)
+
+        # Create Flags
         self.flags = [track_origin]
         self.num_flags = num_flags
         phi = np.random.uniform(-np.pi, np.pi)
@@ -27,6 +33,7 @@ class MapMaster:
             new_flag_pos[1] = self.terrainDynamicCoordinator.get_rough_height(new_flag_pos) # put it on the ground 
             self.flags.append(new_flag_pos)
 
+        
 
     def update(self, events, dt, DEBUG):
         for driver in self.drivers:
@@ -41,8 +48,6 @@ class MapMaster:
             player.terrainDynamic.update_grid(player.pos)
             player.updateCameraPositon()
       
-
-
     def draw(self, clock):        
 
         # get tile dimensions

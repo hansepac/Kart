@@ -135,7 +135,10 @@ class LocalPlayer(Driver):
         if inputs["debug_mode"]:
             self.gameDebugState = GameDebugState((self.gameDebugState.value + 1) % 3)
             self.disable_inputs()
+            pg.event.set_grab(False) 
+
         if self.gameDebugState == self.gameDebugState.FLY_DEBUG:
+            pg.event.set_grab(True) 
             self.camera.control(inputs)
         else:
             self.inputs = inputs

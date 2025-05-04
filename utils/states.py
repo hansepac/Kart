@@ -2,7 +2,9 @@ from enum import Enum
 
 class GameState(Enum):
     TITLE = 0
-    IN_GAME = 1
+    CHAR_SELECT = 1
+    IN_GAME = 2
+    SETTINGS = 3
 
 class OnlineState(Enum):
     LOCAL = 0

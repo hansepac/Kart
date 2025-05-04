@@ -1,4 +1,4 @@
-import pygame as pg
+from __init__ import titleScreen
 
-def update(events):
-    pass
+def update(events, dt, gameState):
+    return titleScreen.update(events, dt, gameState)
