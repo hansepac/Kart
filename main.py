@@ -10,7 +10,6 @@ game_running = True
 dt = 1/FRAME_RATE
 
 while game_running:
-    global gameState
     # WAIT TILL FRAME RATE
     dt = 0.001 * clock.tick(FRAME_RATE)
     # Get all events
