@@ -34,9 +34,12 @@ class LocalPlayer(Driver):
         all_renderables = []
 
         # add drivers (excluding this one)
+        player_renderable = None
         for driver in self.mapmaster.drivers:
-            if self != driver:
-                all_renderables.append(DriverSprite(driver, self.camera))
+            new_driver_renderable = DriverSprite(driver, self.camera)
+            if self == driver:
+                player_renderable = new_driver_renderable
+            all_renderables.append(new_driver_renderable)
 
         # add a renderable for each triangle
         for i in range(len(self.terrainDynamic.homo_triangles)):
@@ -47,25 +50,24 @@ class LocalPlayer(Driver):
             all_renderables.append(FlagSprite(self.mapmaster.flags[i], self.camera, isCurrent=(self.flag_index == i)))
 
         # sort renderables according to depth
+        all_renderables = calculateRenderableScreenCoords(self.camera, all_renderables)
+        player_renderable.screen_depth = 0.0 # move player to top of the stack
         all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)
 
         # now draw renderables
         for renderable in all_renderables:
             renderable.draw(self.screen)
 
-        # now do this player last
-        DriverSprite(self, self.camera).draw(self.screen)
-
         window_x, window_y = self.screen.get_size()
         radius = 100
         draw_speedometer(self.screen, abs(self.speed/10), (radius+30,radius+30), radius=radius, max_val=self.max_momentum/10, tick_step=10)
         show_keyboard_ui(self.screen, (window_x-350, window_y-350))
         
+        # this stuff is termporary for minimap
         displacement_unit_vec = np.array([self.mapmaster.flags[self.flag_index][0], self.mapmaster.flags[self.flag_index][2]]) - np.array([self.pos[0], self.pos[2]])
-        displacement_unit_vec /= np.linalg.norm(displacement_unit_vec)
-        direction_2d = np.array([self.direction_unitvec[0], self.direction_unitvec[2]])
-        direction_2d /= np.linalg.norm(direction_2d)
-        angle_between = np.arccos(direction_2d @ displacement_unit_vec)
+        phi1 = np.atan2(self.direction_unitvec[2], self.direction_unitvec[0])
+        phi2 = np.atan2(displacement_unit_vec[1], displacement_unit_vec[0])
+        angle_between = (phi2 - phi1 ) % (2*np.pi)
         
         draw_minimap(self.screen, angle_between, (radius+30,3*radius+60), radius=80)
         
