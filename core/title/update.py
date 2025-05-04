@@ -1,9 +1,9 @@
-import core
+from utils.cores import Core
+from ui import MenuCore
 
-def update(events, dt, gameState, onlineState):
-    if gameState == gameState.TITLE:
-        gameState = core.titleScreen.update(events, dt, gameState)
-    elif gameState == gameState.JOIN:
-        gameState, onlineState = core.joinGameScreen.update(events, dt, (gameState, onlineState))
-
-    return gameState, onlineState
+def update(c: Core, mc: MenuCore):
+    if c.gameState == c.gameState.TITLE:
+        c.gameState = mc.titleScreen.update(c.events, c.dt, c.gameState)
+    elif c.gameState == c.gameState.JOIN:
+        c.gameState, c.onlineState = mc.joinGameScreen.update(c.events, c.dt, (c.gameState, c.onlineState))
+    return c

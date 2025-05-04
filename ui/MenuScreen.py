@@ -106,3 +106,8 @@ class JoinGameScreen(MenuScreen):
         else:
             pg.mouse.set_visible(True)
             return button["state"][0], button["state"][1]
+        
+class MenuCore:
+    def __init__(self, screen, gameState, onlineState, win_x, win_y):
+        self.titleScreen = TitleScreen(screen, gameState, win_x, win_y)
+        self.joinGameScreen = JoinGameScreen(screen, gameState, onlineState, win_x, win_y)

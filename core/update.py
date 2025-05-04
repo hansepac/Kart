@@ -1,13 +1,18 @@
-from __init__ import screen
 import core.title as title
 import core.game as game
 import core
 
-def update(events, dt, gameState, onlineState):
-    if gameState != gameState.IN_GAME:
-        gameState, onlineState = title.update(events, dt, gameState, onlineState)
-        if gameState == gameState.IN_GAME:
-            game.game_init(onlineState)
-    elif gameState == gameState.IN_GAME:
-        gameState = game.update(events, dt, gameState, onlineState)
-    return gameState
+from utils.cores import Core, GameCore
+from ui import MenuCore
+from entities import MapMaster
+from Server import Client
+
+def update(c: Core, mc: MenuCore):
+    global gc
+    if c.gameState != c.gameState.IN_GAME:
+        c = title.update(c, mc)
+        if c.gameState == c.gameState.IN_GAME:
+            core.gc = core.game_init(c)
+    elif c.gameState == c.gameState.IN_GAME:
+        c = game.update(c, core.gc)
+    return c

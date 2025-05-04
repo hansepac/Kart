@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from __init__ import pg
 import numpy as np
+import pygame as pg
 
 class Renderable(ABC):
     def __init__(self):

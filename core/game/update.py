@@ -1,9 +1,8 @@
-from __init__ import DEBUG
-import core.game as game
+from utils.cores import Core, GameCore
 
-def update(events, dt, gameState, onlineState):
-    local_game_data = game.mapMaster.get_game_data()
-    server_data = game.client.send_to_server(local_game_data)
+def update(c: Core, gc: GameCore):
+    local_game_data = gc.mapMaster.get_game_data()
+    server_data = gc.client.send_to_server(local_game_data)
     
     server_game_data = None
     if server_data:
@@ -19,7 +18,7 @@ def update(events, dt, gameState, onlineState):
             
 
     if server_game_data:
-        game.mapMaster.update_from_server(server_data)
-    game.mapMaster.update(events, dt, DEBUG)
+        gc.mapMaster.update_from_server(server_data)
+    gc.mapMaster.update(c)
 
-    return gameState
+    return c

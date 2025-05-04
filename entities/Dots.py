@@ -1,4 +1,3 @@
-from __init__ import pg
 from random import randint
 from numpy import array
 

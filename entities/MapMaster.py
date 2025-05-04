@@ -72,15 +72,15 @@ class MapMaster:
                     self.overwrite_game_setup(value["game_setup"])
                     self.terrainDynamicCoordinator.overwrite_seed(value["seed"])
 
-    def update(self, events, dt, DEBUG):
+    def update(self, c):
         # Update local player / driver positions
         driver_dat = []
         for driver in self.drivers:
             if driver.is_alien:
                 continue
             else:
-                driver.control(events)
-                driver.updatePosition(dt)
+                driver.control(c.events)
+                driver.updatePosition(c.dt)
                 driver_dat.append(driver.get_data())
 
                 # check for flag indices
