@@ -38,7 +38,7 @@ camera = Camera(y=5, z = 0, theta = 0, phi = pi/2, nx = window_x, ny = window_y)
 from entities import MapMaster
 mapMaster = MapMaster(screen=screen)
 mapMaster.addLocalPlayer()
-mapMaster.addLocalPlayer(is_controller=True)
+# mapMaster.addLocalPlayer(is_controller=True)
 
 
 

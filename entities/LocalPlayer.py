@@ -31,7 +31,7 @@ class LocalPlayer(Driver):
         self.camera.updateCamMat() # update camera matrices once per frame
 
         # make renderables
-        all_renderables = []
+        nontriangle_renderables, triangle_renderables = [], []
 
         # add drivers (excluding this one)
         player_renderable = None
@@ -39,18 +39,18 @@ class LocalPlayer(Driver):
             new_driver_renderable = DriverSprite(driver, self.camera)
             if self == driver:
                 player_renderable = new_driver_renderable
-            all_renderables.append(new_driver_renderable)
+            nontriangle_renderables.append(new_driver_renderable)
 
         # add a renderable for each triangle
         for i in range(len(self.terrainDynamic.homo_triangles)):
-            all_renderables.append(TerrainTriangle(self.terrainDynamic.homo_triangles[i], self.camera, colour=self.terrainDynamic.colours_triangles[i], skycolour=sky_color)) # creating renderables calculates screen location
+            triangle_renderables.append(TerrainTriangle(self.terrainDynamic.homo_triangles[i], self.camera, colour=self.terrainDynamic.colours_triangles[i], skycolour=sky_color)) # creating renderables calculates screen location
             
         # add flag renderable
         for i in range(self.mapmaster.num_flags):
-            all_renderables.append(FlagSprite(self.mapmaster.flags[i], self.camera, isCurrent=(self.flag_index == i)))
+            nontriangle_renderables.append(FlagSprite(self.mapmaster.flags[i], self.camera, isCurrent=(self.flag_index == i)))
 
         # sort renderables according to depth
-        all_renderables = calculateRenderableScreenCoords(self.camera, all_renderables)
+        all_renderables = calculateRenderableScreenCoords(self.camera, nontriangle_renderables, triangle_renderables)
         player_renderable.screen_depth = 0.0 # move player to top of the stack
         all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)
 
@@ -61,7 +61,8 @@ class LocalPlayer(Driver):
         window_x, window_y = self.screen.get_size()
         radius = 100
         draw_speedometer(self.screen, abs(self.speed/10), (radius+30,radius+30), radius=radius, max_val=self.max_momentum/10, tick_step=10)
-        show_keyboard_ui(self.screen, (window_x-350, window_y-350))
+        if not self.is_controller:
+            show_keyboard_ui(self.screen, (window_x-350, window_y-350))
         
         # this stuff is termporary for minimap
         displacement_unit_vec = np.array([self.mapmaster.flags[self.flag_index][0], self.mapmaster.flags[self.flag_index][2]]) - np.array([self.pos[0], self.pos[2]])
