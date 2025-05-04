@@ -3,3 +3,4 @@ numpy
 dotenv
 noise
 matplotlib
+psutil

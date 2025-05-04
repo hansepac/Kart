@@ -2,7 +2,6 @@ from __init__ import entityHandler, client_socket
 from server.client import send_to_server
 
 def update_from_server():
-
     responses = send_to_server(client_socket, entityHandler.player)
     for response in responses:
         if response['msg_type'] == "pos":

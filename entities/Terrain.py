@@ -15,6 +15,28 @@ class TerrainDynamicCoordinator:
         self.height_base_large = np.random.randint(0, 1000)
         self.detail_base = np.random.randint(0, 1000)
 
+    def get_seed_json(self):
+        return {
+            "colour_base": self.colour_base,
+            "height_base_large": self.height_base_large,
+            "detail_base": self.detail_base,
+            "noise_density_large": self.noise_density_large,
+            "detail_density": self.detail_density,
+            "noise_height_large": self.noise_height_large,
+            "detail_height": self.detail_height,
+            "grid_spacing": self.grid_spacing
+        }
+    
+    def overwrite_seed(self, seed_json):
+        self.colour_base = seed_json["colour_base"]
+        self.height_base_large = seed_json["height_base_large"]
+        self.detail_base = seed_json["detail_base"]
+        self.noise_density_large = seed_json["noise_density_large"]
+        self.detail_density = seed_json["detail_density"]
+        self.noise_height_large = seed_json["noise_height_large"]
+        self.detail_height = seed_json["detail_height"]
+        self.grid_spacing = seed_json["grid_spacing"]
+
     def get_rough_height(self, pos_3d):
         '''Returns the height of the perlin function. It might not line up exactly with the ground because the 
         ground is quantized to a grid, and has linear interpolation, while this doesn't take into account the grid.'''

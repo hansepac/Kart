@@ -1,9 +1,10 @@
-from __init__ import gameState
 from core import title
 from core import game
+from utils.cores import Core
+from ui import MenuCore
 
-def draw(gameState):
-    if gameState == gameState.TITLE:
-        title.draw()
-    elif gameState == gameState.IN_GAME:
-        game.draw()
+def draw(c: Core, mc: MenuCore):
+    if c.gameState != c.gameState.IN_GAME:
+        title.draw(c, mc)
+    elif c.gameState == c.gameState.IN_GAME:
+        game.draw(c.clock)
