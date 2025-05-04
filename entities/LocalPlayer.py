@@ -3,10 +3,13 @@ from .Driver import Driver
 from .Camera import Camera
 from input import Controller
 from utils.states import GameDebugState
+from ui import draw_debug_text, draw_speedometer, show_keyboard_ui, draw_minimap
+from entities.Renderable import *
 
 class LocalPlayer(Driver):
     # it already has position and velocity stuff
-    def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), windowsize = (400, 400), is_controller = False):
+
+    def __init__(self, mapmaster, player_screen, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), windowsize = (400, 400), is_controller = False):
         super().__init__(mapmaster, pos = pos, direction_unitvec = direction_unitvec)
         self.is_controller = is_controller
         self.controller: Controller = Controller(is_controller)
@@ -15,6 +18,79 @@ class LocalPlayer(Driver):
         self.camera_distance = 0.3
         self.camera_theta = 0.2
         self.gameDebugState: GameDebugState = GameDebugState(0)
+
+        self.screen = player_screen
+
+    def render_player_view(self, clock):
+
+        angle = (self.camera.theta + np.pi/2)/np.pi
+        sky_color = (0, round(angle*200), round(angle*255))
+        self.screen.fill(sky_color)
+
+        # iterate through players is iterating through cameras. 
+        self.camera.updateCamMat() # update camera matrices once per frame
+
+        # make renderables
+        all_renderables = []
+
+        # add drivers (excluding this one)
+        for driver in self.mapmaster.drivers:
+            if self != driver:
+                all_renderables.append(DriverSprite(driver, self.camera))
+
+        # add a renderable for each triangle
+        for i in range(len(self.terrainDynamic.homo_triangles)):
+            all_renderables.append(TerrainTriangle(self.terrainDynamic.homo_triangles[i], self.camera, colour=self.terrainDynamic.colours_triangles[i], skycolour=sky_color)) # creating renderables calculates screen location
+            
+        # add flag renderable
+        for i in range(self.mapmaster.num_flags):
+            all_renderables.append(FlagSprite(self.mapmaster.flags[i], self.camera, isCurrent=(self.flag_index == i)))
+
+        # sort renderables according to depth
+        all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)
+
+        # now draw renderables
+        for renderable in all_renderables:
+            renderable.draw(self.screen)
+
+        # now do this player last
+        DriverSprite(self, self.camera).draw(self.screen)
+
+        window_x, window_y = self.screen.get_size()
+        radius = 100
+        draw_speedometer(self.screen, abs(self.speed/10), (radius+30,radius+30), radius=radius, max_val=self.max_momentum/10, tick_step=10)
+        show_keyboard_ui(self.screen, (window_x-350, window_y-350))
+        
+        displacement_unit_vec = np.array([self.mapmaster.flags[self.flag_index][0], self.mapmaster.flags[self.flag_index][2]]) - np.array([self.pos[0], self.pos[2]])
+        displacement_unit_vec /= np.linalg.norm(displacement_unit_vec)
+        direction_2d = np.array([self.direction_unitvec[0], self.direction_unitvec[2]])
+        direction_2d /= np.linalg.norm(direction_2d)
+        angle_between = np.arccos(direction_2d @ displacement_unit_vec)
+        
+        draw_minimap(self.screen, angle_between, (radius+30,3*radius+60), radius=80)
+        
+        # draw debug text
+        if self.gameDebugState != self.gameDebugState.NORMAL:
+            debug_text = [
+                f"Camera Pos: {round(self.camera.x, 2)}, {round(self.camera.y, )}, {round(self.camera.z, 2)}",
+                f"Camera Angle: {round(self.phi, 1)}, {round(self.camera.phi, 1)}",
+                f"Theta Diff: {round(min(self.phi - self.camera.phi, self.phi - self.camera.phi + 2*np.pi, self.phi - self.camera.phi - 2*np.pi, key=abs), 2)}",
+                f"FPS: {round(clock.get_fps(), 2)}",
+                f"Debug State: {self.gameDebugState.name}",
+                f"Is on Ground: {self.is_on_ground}",
+                f"x: {round(self.speed)}",
+                f"f(x): {round(self.get_speed(self.speed), 2)}",
+                f"slope_force: {round(self.slope_speed, 2)}",
+                f"y_velocity: {round(self.vel_y, 2)}",
+                f"Flag screen depth: {FlagSprite(self.mapmaster.flags[self.flag_index], self.camera).screen_depth}"
+            ]
+            draw_debug_text(self.screen, debug_text, (255, 255, 255))
+
+        else:
+            debug_text = [
+                f"FPS: {round(clock.get_fps(), 2)}"
+            ]
+            draw_debug_text(self.screen, debug_text, (255, 255, 255))
 
 
     def updateCameraPositon(self):
@@ -65,7 +141,7 @@ class LocalPlayer(Driver):
 
 
         
-    # add stuff about getting controls
+
 
 
     

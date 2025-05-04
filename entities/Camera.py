@@ -52,6 +52,7 @@ class Camera:
                              [0, cos(self.theta), -sin(self.theta), 0],
                              [0, sin(self.theta), cos(self.theta), 0],
                              [0, 0, 0, 1]])
+        
         perspectiveMatrix = self.perspective_matrix(70, self.nx/self.ny, 0.1, 1000 )
         self.camMat = perspectiveMatrix @ thetaMatrix @ phiMatrix @ translationMatrix
 
