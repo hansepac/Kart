@@ -48,5 +48,5 @@ def game_init(c: Core):
         
     # Add local player
     gc.mapMaster.addLocalPlayer()
-    # mapMaster.addLocalPlayer(is_controller=True)
+    gc.mapMaster.addLocalPlayer(is_controller=True)
     return gc

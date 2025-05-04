@@ -1,5 +1,4 @@
 import pygame as pg
-from numpy import array, pi
 import numpy as np
 from entities.Terrain import TerrainDynamic
 from entities.LocalPlayer import LocalPlayer
@@ -93,7 +92,7 @@ class MapMaster:
 
         
       
-    def draw(self, clock):        
+    def draw(self, c):        
 
         # get tile dimensions
         x_size, y_size = self.screen.get_size()
@@ -101,7 +100,7 @@ class MapMaster:
         y_size = y_size // 2 if len(self.local_players) > 2 else y_size 
 
         for i, player in enumerate(self.local_players):
-            player.render_player_view(clock)
+            player.render_player_view(c.clock)
             self.screen.blit(player.screen, ((i % 2)*x_size, (i // 2)*y_size))
 
 
@@ -129,9 +128,6 @@ class MapMaster:
 
         self.local_players.append(new_local_player)
         self.drivers.append(new_local_player)
-        
-        
-
         
             
 
