@@ -69,15 +69,17 @@ class MapMaster:
 
         new_local_player = LocalPlayer(self, pg.Surface((x_size, y_size)), pos=pos, direction_unitvec=direction_unitvec, is_controller=is_controller)
         
+        self.local_players.append(new_local_player)
+        self.drivers.append(new_local_player)
+        
         # create new screens for other local players
         for player in self.local_players:
             player.screen = pg.Surface((x_size, y_size))
             player.camera.nx = x_size
             player.camera.ny = y_size
             player.camera.updateVpMat()
+            print(x_size, y_size)
 
-        self.local_players.append(new_local_player)
-        self.drivers.append(new_local_player)
         
             
 
