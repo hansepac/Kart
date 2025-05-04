@@ -124,12 +124,14 @@ class DriverSprite(Renderable):
     def draw(self, screen):
 
         if np.linalg.norm(self.screen_coords[1]) > 0:
-                shadow_rect = pg.Rect(0,0,80,40)
+                scale_factor = 0.25*(1 - self.screen_coords[1][2])**(-1)
+                shadow_rect = pg.Rect(0,0,80/scale_factor,40/scale_factor)
                 shadow_rect.center = (self.screen_coords[1][0], self.screen_coords[1][1])
                 pg.draw.ellipse(screen, (50, 50, 50), shadow_rect)
 
         if np.linalg.norm(self.screen_coords[0]) > 1:
-            scaled_img = pg.transform.scale(self.carImg, (self.carImg.get_width() // 3, self.carImg.get_height() // 3))
+            scale_factor = 0.7*(1 - self.screen_coords[0][2])**(-1)
+            scaled_img = pg.transform.scale(self.carImg, (self.carImg.get_width() /scale_factor, self.carImg.get_height() /scale_factor))
             img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1]))
             screen.blit(scaled_img, img_rect)
 

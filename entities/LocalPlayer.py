@@ -51,12 +51,13 @@ class LocalPlayer(Driver):
 
         # sort renderables according to depth
         all_renderables = calculateRenderableScreenCoords(self.camera, nontriangle_renderables, triangle_renderables)
-        player_renderable.screen_depth = 0.0 # move player to top of the stack
         all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)
 
         # now draw renderables
         for renderable in all_renderables:
-            renderable.draw(self.screen)
+            if renderable is not player_renderable:
+                renderable.draw(self.screen)
+        player_renderable.draw(self.screen) # draw this player last
 
         window_x, window_y = self.screen.get_size()
         radius = 100
