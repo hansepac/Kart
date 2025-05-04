@@ -5,7 +5,6 @@ class Controller():
         self.is_controller = is_controller
         self.joystick = None
         if is_controller and pg.joystick.get_count() > 0:
-            print(pg.joystick.get_init(), pg.joystick.get_count())
             self.joystick = [pg.joystick.Joystick(x) for x in range(pg.joystick.get_count())][0]
             self.gas = 1
             self.brake = 2
@@ -38,8 +37,6 @@ class Controller():
             elif event.type == pg.JOYBUTTONDOWN:
                 if event.button == self.enable_debug_mode:
                     self.debug_mode = not self.debug_mode
-
-        print(self.joystick, pg.joystick.get_count())
 
         if self.is_controller and self.joystick is None and pg.joystick.get_init() and pg.joystick.get_count() > 0:
             self.joystick = [pg.joystick.Joystick(x) for x in range(pg.joystick.get_count())][0]
