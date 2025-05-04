@@ -19,20 +19,18 @@ def is_on_visible_side(renderable, plane_point, normal):
     return np.any(dots > 0)
 
 
-def calculateRenderableScreenCoords(camera, renderables_list):
+def calculateRenderableScreenCoords(camera, nontriangle_renderables, triangle_renderables):
     ''' This function will pass in all renderables to the camera as an array so that 
     the computation can be done in C rather than with a python for loop. '''
 
     # filter by if renderable is even in view
     '''It turned to to be faster to just render all of them rather than taking the time to 
     figure out if they should be rendered or not. '''
-    filtered_renderables = renderables_list # [r for r in renderables_list if is_on_visible_side(r, np.array([camera.x, camera.y, camera.z]), np.array([np.sin(camera.phi)*np.cos(camera.theta), np.sin(camera.theta), -np.cos(camera.theta)*np.cos(camera.phi)]))]
-
+    
 
     homo_coords_list = []
-    for renderable in filtered_renderables:
-        if not isinstance(renderable, TerrainTriangle):
-            homo_coords_list += renderable.homo_coords
+    for renderable in nontriangle_renderables:
+        homo_coords_list += renderable.homo_coords
 
     screen_coords = camera.getScreenCoords(homo_coords_list)
 
@@ -44,36 +42,38 @@ def calculateRenderableScreenCoords(camera, renderables_list):
     screen_coords[mask, :] = 0
 
     j = 0
-    for i in range(len(filtered_renderables)):
-        # check to see if it needs triangle rendering
-        if isinstance(filtered_renderables[i], TerrainTriangle):
-            '''It ended up being faster to just do triangle rendering for every triangle,
-            rather than taking the time to figure out if it actually need that or not. '''
-            # pass
-            # row_norms = np.linalg.norm(screen_coords[j:jn], axis=1)
-            # if np.sum(row_norms > 0) < len(filtered_renderables[i].homo_coords):
-            # do triangle rendering
-            filtered_renderables[i].triangle_rendering = True
-            filtered_renderables[i].screen_coords = camera.drawTriangle(filtered_renderables[i].homo_coords)
-            if len(filtered_renderables[i].screen_coords) > 1:
-                filtered_renderables[i].screen_depth = np.average(np.array(filtered_renderables[i].screen_coords)[:, 2])
-            elif len(filtered_renderables[i].screen_coords) == 1:
-                filtered_renderables[i].screen_depth = filtered_renderables[i].screen_coords[0][2]
-            else:
-                filtered_renderables[i].screen_depth = 0
+    for i in range(len(nontriangle_renderables)):
+        # after we calculate all the screen coords, pass them out again. 
+        jn = len(nontriangle_renderables[i].homo_coords) + j
+        nontriangle_renderables[i].screen_coords = screen_coords[j:jn]
+        nontriangle_renderables[i].screen_depth = np.average(np.array(screen_coords[j:jn])[:, 2])
+        
+        j = jn
 
-        else:
-            # after we calculate all the screen coords, pass them out again. 
-            jn = len(filtered_renderables[i].homo_coords) + j
-            filtered_renderables[i].screen_coords = screen_coords[j:jn]
-            filtered_renderables[i].screen_depth = np.average(np.array(screen_coords[j:jn])[:, 2])
-            
-            j = jn
+    # now do the trianles
+    '''It ended up being faster to just do triangle rendering for every triangle,
+    rather than taking the time to figure out if it actually need that or not. '''
+
+    new_triangle_renderables = []
+    for triangle_renderable in triangle_renderables:
+        new_triangle_renderables.append(render_triangle(triangle_renderable, camera))
+    
+
+    return nontriangle_renderables + new_triangle_renderables
 
 
-    return filtered_renderables
+# this function is incase we want to do multi-processing on this
+def render_triangle(triangle_renderable, camera):
+    triangle_renderable.triangle_rendering = True
+    triangle_renderable.screen_coords = camera.drawTriangle(triangle_renderable.homo_coords)
+    if len(triangle_renderable.screen_coords) > 1:
+        triangle_renderable.screen_depth = np.average(np.array(triangle_renderable.screen_coords)[:, 2])
+    elif len(triangle_renderable.screen_coords) == 1:
+        triangle_renderable.screen_depth = triangle_renderable.screen_coords[0][2]
+    else:
+        triangle_renderable.screen_depth = 0
 
-
+    return triangle_renderable
 
 # used for drawing terrain triangles
 class TerrainTriangle(Renderable):

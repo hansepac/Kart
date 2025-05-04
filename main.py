@@ -64,3 +64,4 @@ finally:
         print(f"Killed child process: {child.pid}")
     print("Server terminated")
     pg.quit()
+
