@@ -7,13 +7,13 @@ class Driver:
     def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), is_alien = False):
         self.is_alien = is_alien
         self.id = create_id()
-        self.pos = pos
+        self.pos = pos.copy()
         self.speed = 0
         self.vel_y = 0
         self.acc_y = 0
         self.omega = 0 # azimuthal velocity
         self.phi = 0
-        self.direction_unitvec = direction_unitvec
+        self.direction_unitvec = direction_unitvec.copy()
         self.other_forces = np.zeros(3) # other forces acting on the car
 
         self.flag_index = 0 
