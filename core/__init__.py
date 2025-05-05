@@ -61,6 +61,7 @@ def game_init(c: Core):
         gc.client.connect_to_server()
 
         gc.mapMaster = MapMaster(screen=c.screen)
+        gc.mapMaster.setup_game()
     elif c.onlineState == c.onlineState.LOCAL:
         gc.mapMaster = MapMaster(screen=c.screen)
         gc.mapMaster.setup_game()
