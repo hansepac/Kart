@@ -124,6 +124,13 @@ class DriverSprite(Renderable):
         relative_angle = (driver_angle - camera.phi) % (2*np.pi)
         division = round(relative_angle / (np.pi/4)) % 8
 
+        # turn more if in first person 
+        if division == 0:
+            if driver_object.drift_direction > 0.5:
+                division = 1
+            elif driver_object.drift_direction < -0.5:
+                division = 7
+
         self.carImg = pg.image.load(f'assets/car{driver_object.car_sprite}_{division}.png')
 
     def draw(self, screen):
@@ -137,7 +144,7 @@ class DriverSprite(Renderable):
         if np.linalg.norm(self.screen_coords[0]) > 1:
             scale_factor = 0.7*(1 - self.screen_coords[0][2])**(-1)
             scaled_img = pg.transform.scale(self.carImg, (self.carImg.get_width() /scale_factor, self.carImg.get_height() /scale_factor))
-            img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1]))
+            img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1]*0.95))
             screen.blit(scaled_img, img_rect)
 
 class FlagSprite(Renderable):
