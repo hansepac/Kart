@@ -26,8 +26,26 @@ class Client:
             print("Connection refused. Retrying...")
             self.connect_to_server()
 
-    def __repr__(self):
-        return f"Server(server_id={self.server_id}, server_name={self.server_name}, server_ip={self.server_ip})"
+    def discover_hosts(broadcast_port=37020, timeout=3):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(('', broadcast_port))
+        s.settimeout(timeout)
+
+        found_hosts = set()
+        print("Scanning for LAN hosts...")
+
+        try:
+            while True:
+                data, addr = s.recvfrom(1024)
+                message = data.decode()
+                if message.startswith("HOST_AVAILABLE:"):
+                    _, ip, port = message.strip().split(":")
+                    found_hosts.add((ip, int(port)))
+        except socket.timeout:
+            pass  # Stop listening after timeout
+
+        return list(found_hosts)
     
     def connect_to_server(self):
         connect_attempts = 0
@@ -96,6 +114,15 @@ class Server:
         self.PORT = port
         self.clients = []
         self.game_setup = None
+
+    def broadcast_host_info(self, port=51234, broadcast_port=37020):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+
+        message = f"HOST_AVAILABLE:{socket.gethostbyname(socket.gethostname())}:{port}"
+        while True:
+            s.sendto(message.encode(), ('<broadcast>', broadcast_port))
+            time.sleep(1)  # Broadcast every second
 
     def handle_client(self, client: ClientData):
         """Handle communication with the connected client."""
@@ -203,6 +230,9 @@ class Server:
         server.bind((self.HOST, self.PORT))
         server.listen()
         print(f"SERVER: Server started on {self.HOST}:{self.PORT}")
+
+        # Broadcast host info
+        threading.Thread(target=self.broadcast_host_info).start()
 
         while True:
             client_socket, client_address = server.accept()

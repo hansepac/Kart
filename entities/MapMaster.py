@@ -117,14 +117,14 @@ class MapMaster:
         # creates a terrain dynamic. The driver class uses this. 
         return TerrainDynamic(coordinator=self.terrainDynamicCoordinator, center=pos)
     
-    def addLocalPlayer(self, pos=np.array([0.0, 0.0, 0.0]), direction_unitvec=np.array([1.0, 0.0, 0.0]), is_controller=False):
+    def addLocalPlayer(self, controller, pos=np.array([0.0, 0.0, 0.0]), direction_unitvec=np.array([1.0, 0.0, 0.0])):
         # calculate screen tile sizes
         x_size, y_size = self.screen.get_size()
         x_size = x_size // 2 if len(self.local_players) + 1 > 1 else x_size
         y_size = y_size // 2 if len(self.local_players) + 1 > 2 else y_size
 
         # Create LocalPlayer
-        new_local_player = LocalPlayer(self, pg.Surface((x_size, y_size)), pos=pos, direction_unitvec=direction_unitvec, is_controller=is_controller)
+        new_local_player = LocalPlayer(self, pg.Surface((x_size, y_size)), pos=pos, direction_unitvec=direction_unitvec, controller=controller)
         
         # create new screens for other local players
         for player in self.local_players:
