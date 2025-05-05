@@ -114,7 +114,6 @@ class TitleScreen(MenuScreen):
         self.draw_buttons()
         # Draw the image and its border
         self.screen.blit(self.logo_sprite, self.logo_rect)
-        pg.draw.rect(self.screen, (255, 255, 255), self.logo_rect, 3, border_radius=10)
 
     def button_action(self, button):
         if button["text"] == "Quit":
@@ -193,7 +192,7 @@ class ControllerScreen:
         }
         self.contol_attrs = [value for value in self.controls.values()]
         if c.DEV_MODE:
-            self.controls["Debug Mode"] = "enable_debug_mode"
+            self.controls["Debug"] = "enable_debug_mode"
         self.update_buttons(c)
     
     def button_action(self, c, i, j):
