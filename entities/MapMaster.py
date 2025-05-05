@@ -43,7 +43,7 @@ class MapMaster:
     
     def get_game_data(self):
         return {
-            "drivers": [driver.get_data() for driver in self.drivers]
+            "drivers": [driver.get_data() for driver in self.drivers if not driver.is_alien],
         }
     
     def overwrite_game_setup(self, game_info_json):
