@@ -226,19 +226,22 @@ class ControllerScreen:
 
     def update_buttons(self, c):
         # Far Left Column of Text
-        self.buttons = [[{"text": "Input Type"}]]
-        self.buttons[0] += [{"text": key} for key in self.controls]
+        self.buttons = [[{"text": "Input Type", "is_button": False}]]
+        self.buttons[0] += [{"text": key, "is_button": False} for key in self.controls]
 
         for i, controller in enumerate(c.controllers):
             input_type = "Controller" if controller.is_controller else "Keyboard"
             self.buttons.append(
                 [
-                    {"text": input_type},
-                    *[{"text": f"{pg.key.name(getattr(controller, value))}"} for value in self.controls.values()],
-                    {"text": "Remove"},
+                    {"text": input_type, "is_button": True},
+                    *[{"text": f"{pg.key.name(getattr(controller, value))}", "is_button": True} for value in self.controls.values()],
+                    {"text": "Remove", "is_button": True},
                 ]
             )
-        self.buttons.append([{"text": "Add"}, {"text": "Back"}])
+        if len(c.controllers) < 4:
+            self.buttons.append([{"text": "Add", "is_button": True}, {"text": "Back", "is_button": True}])
+        else:
+            self.buttons.append([{"text": "Back", "is_button": True}])
         self.button_rects = []
 
         rows = max(len(row) for row in self.buttons)
@@ -277,7 +280,7 @@ class ControllerScreen:
 
         for j, col in enumerate(self.button_rects):
             for i, rect in enumerate(col):
-                if rect.collidepoint(self.mouse_pos) and click:
+                if rect.collidepoint(self.mouse_pos) and click and self.buttons[j][i]["is_button"]:
                     c = self.button_action(c, i, j)
         return c
 
@@ -291,25 +294,27 @@ class ControllerScreen:
                 self.draw_button(i, j, invert)
                 
     def draw_button(self, i, j, invert=False, color = None):
-        hovered = self.button_rects[j][i].collidepoint(self.mouse_pos)
-        scale = self.hover_scale if hovered else 1.0
+        text_color = (255, 255, 255)
+        if self.buttons[j][i]["is_button"]:
+            hovered = self.button_rects[j][i].collidepoint(self.mouse_pos)
+            scale = self.hover_scale if hovered else 1.0
 
-        if not invert or color:
-            if color:
-                button_color = color
-            else:
-                button_color = (255, 255, 255) if hovered else self.bg_color
-            w, h = int(self.base_w * scale), int(self.base_h * scale)
-            new_rect = pg.Rect(0, 0, w, h)
-            new_rect.center = self.button_rects[j][i].center
-            pg.draw.rect(self.screen, button_color, new_rect, border_radius=10)
+            if not invert or color:
+                if color:
+                    button_color = color
+                else:
+                    button_color = (255, 255, 255) if hovered else self.bg_color
+                w, h = int(self.base_w * scale), int(self.base_h * scale)
+                new_rect = pg.Rect(0, 0, w, h)
+                new_rect.center = self.button_rects[j][i].center
+                pg.draw.rect(self.screen, button_color, new_rect, border_radius=10)
 
-        text_color = self.bg_color if hovered else (255, 255, 255)
-        pg.draw.rect(self.screen, (255, 255, 255), new_rect, 3, border_radius=10)
+            text_color = self.bg_color if hovered else (255, 255, 255)
+            pg.draw.rect(self.screen, (255, 255, 255), new_rect, 3, border_radius=10)
 
         button_text = self.buttons[j][i]["text"]
         label = self.font.render(button_text, True, text_color)
-        label_rect = label.get_rect(center=new_rect.center)
+        label_rect = label.get_rect(center=self.button_rects[j][i].center)
         self.screen.blit(label, label_rect)
 
 class MenuCore:
