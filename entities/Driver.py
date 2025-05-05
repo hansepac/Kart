@@ -105,7 +105,7 @@ class Driver:
     
 
     def get_homo_pos(self):
-        return np.array([*self.pos, 1])
+        return np.array([*self.pos, 1]) + np.array([0, 0.01, 0, 0]) # make it slightly above the ground. 
 
     def updatePosition(self, dt):
         dt*=30

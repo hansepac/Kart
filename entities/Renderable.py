@@ -144,7 +144,7 @@ class DriverSprite(Renderable):
         if np.linalg.norm(self.screen_coords[0]) > 1:
             scale_factor = 0.7*(1 - self.screen_coords[0][2])**(-1)
             scaled_img = pg.transform.scale(self.carImg, (self.carImg.get_width() /scale_factor, self.carImg.get_height() /scale_factor))
-            img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1]*0.95))
+            img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1] - 0.1*scaled_img.get_height()))
             screen.blit(scaled_img, img_rect)
 
 class FlagSprite(Renderable):
