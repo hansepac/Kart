@@ -9,8 +9,8 @@ from entities.Renderable import *
 class LocalPlayer(Driver):
     # it already has position and velocity stuff
 
-    def __init__(self, mapmaster, player_screen, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), is_controller = False):
-        super().__init__(mapmaster, pos = pos, direction_unitvec = direction_unitvec)
+    def __init__(self, mapmaster, player_screen, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), is_controller = False, car_sprite = 0):
+        super().__init__(mapmaster, pos = pos, direction_unitvec = direction_unitvec, car_sprite=car_sprite)
         self.is_controller = is_controller
         self.controller: Controller = Controller(is_controller)
         self.camera = Camera(*pos, np.atan2(direction_unitvec[2], direction_unitvec[0]), nx = player_screen.get_size()[0], ny = player_screen.get_size()[1])

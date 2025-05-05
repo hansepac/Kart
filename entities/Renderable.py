@@ -119,7 +119,12 @@ class DriverSprite(Renderable):
         shadow_loc[1] = self.driver_object.terrainDynamic.get_ground_height(self.driver_object.pos)
         self.homo_coords.append(shadow_loc)
 
-        self.carImg = pg.image.load('assets/car1_basic.png')
+        # choose image
+        driver_angle = np.atan2(driver_object.direction_unitvec[2], driver_object.direction_unitvec[0]) + np.pi/2
+        relative_angle = (driver_angle - camera.phi) % (2*np.pi)
+        division = round(relative_angle / (np.pi/4)) % 8
+
+        self.carImg = pg.image.load(f'assets/car{driver_object.car_sprite}_{division}.png')
 
     def draw(self, screen):
 

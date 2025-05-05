@@ -4,7 +4,7 @@ from utils.misc import create_id
 
 class Driver:
     # this is any racing character, AI or player
-    def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), is_alien = False):
+    def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), is_alien = False, car_sprite = 0):
         self.is_alien = is_alien
         self.id = create_id()
         self.pos = pos.copy()
@@ -48,7 +48,7 @@ class Driver:
         self.mass = 1
         self.friction_coef = 0.3 # may depend on terrain
 
-
+        self.car_sprite = car_sprite
 
         self.inputs = {
             "gas": False,

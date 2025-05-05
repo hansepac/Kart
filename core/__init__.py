@@ -47,6 +47,6 @@ def game_init(c: Core):
         gc.mapMaster.setup_game()
         
     # Add local player
-    gc.mapMaster.addLocalPlayer()
-    gc.mapMaster.addLocalPlayer(is_controller=True)
+    gc.mapMaster.addLocalPlayer(car_sprite=0)
+    gc.mapMaster.addLocalPlayer(is_controller=True, car_sprite=1)
     return gc
