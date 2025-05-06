@@ -36,6 +36,9 @@ class Driver:
 
         # TODO: clean out the old stuff here
 
+        self.actual_speed = 0
+        self.past_speeds = np.zeros(5)
+
         # temporary
         self.normal = np.array([0, 1, 0])
         self.gas_force = 2 # actually this needs to depend on velocity or things blow up
@@ -107,8 +110,8 @@ class Driver:
     def get_homo_pos(self):
         return np.array([*self.pos, 1]) + np.array([0, 0.01, 0, 0]) # make it slightly above the ground. 
 
-    def updatePosition(self, dt):
-        dt*=30
+    def updatePosition(self, dt_in):
+        dt = 30*dt_in
 
         ground_height = self.terrainDynamic.get_ground_height(self.pos)
 
@@ -201,7 +204,7 @@ class Driver:
 
         # If above ground, apply gravity
         if self.pos[1] > ground_height:
-            self.vel_y += -self.gravity * dt / 30 / 40
+            self.vel_y += -self.gravity * dt / 30 / 10
         else:
             # If below ground, apply floaty force
             floaty_constant = 1
@@ -217,14 +220,15 @@ class Driver:
         vel_final = self.direction_unitvec*self.get_speed(self.speed) + self.other_forces
         vel_final[1] = self.vel_y
         self.pos += vel_final / 30
+        self.past_speeds[:-1] = self.past_speeds[1:] # shift old values
+        self.past_speeds[-1] = np.sqrt(vel_final[0]**2 + vel_final[2]**2)/dt/30
+        self.actual_speed = np.mean(self.past_speeds)
 
         # clip ground if below
         if self.pos[1] < ground_height:
             self.pos[1] = ground_height
 
         
-    def returnCurrentSprite(self):
-        pass
 
     def drift_turn(self, turn_speed, dt, add_time = True):
         modified_turn_dir = np.clip(self.inputs["turn_dir"] + self.drift_direction, min(self.drift_turn_speed_mult*self.drift_direction, 0.5*self.drift_direction), max(self.drift_turn_speed_mult*self.drift_direction, 0.5*self.drift_direction))

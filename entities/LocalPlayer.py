@@ -47,7 +47,7 @@ class LocalPlayer(Driver):
             
         # add flag renderable
         for i in range(self.mapmaster.num_flags):
-            nontriangle_renderables.append(FlagSprite(self.mapmaster.flags[i], self.camera, isCurrent=(self.flag_index == i)))
+            nontriangle_renderables.append(FlagSprite(self.mapmaster.flags[i], self.camera, isCurrent=(self.flag_index == i), isLast=(i == self.mapmaster.num_flags - 1)))
 
         # sort renderables according to depth
         all_renderables = calculateRenderableScreenCoords(self.camera, nontriangle_renderables, triangle_renderables)
@@ -60,8 +60,10 @@ class LocalPlayer(Driver):
         player_renderable.draw(self.screen) # draw this player last
 
         window_x, window_y = self.screen.get_size()
-        radius = 100
-        draw_speedometer(self.screen, abs(self.speed/10), (radius+30,radius+30), radius=radius, max_val=self.max_momentum/10, tick_step=10)
+        radius1 = 60
+        draw_speedometer(self.screen, abs(self.speed/10), (radius1+30,radius1+30), radius=radius1, max_val=self.max_momentum/10, tick_step=10, name="")
+        radius2 = 80
+        draw_speedometer(self.screen, self.actual_speed*2500, (2*radius1+60 + radius2, radius1+30), radius=radius2, max_val=100, tick_step=10)
         if not self.is_controller:
             show_keyboard_ui(self.screen, (window_x-350, window_y-350))
         
@@ -71,7 +73,7 @@ class LocalPlayer(Driver):
         phi2 = np.atan2(displacement_unit_vec[1], displacement_unit_vec[0])
         angle_between = (phi2 - phi1 ) % (2*np.pi)
         
-        draw_minimap(self.screen, angle_between, (radius+30,3*radius+60), radius=80)
+        draw_minimap(self.screen, angle_between, (radius1+30,3*radius1+60), radius=80)
         
         # draw debug text
         if self.gameDebugState != self.gameDebugState.NORMAL:
@@ -85,8 +87,7 @@ class LocalPlayer(Driver):
                 f"x: {round(self.speed)}",
                 f"f(x): {round(self.get_speed(self.speed), 2)}",
                 f"slope_force: {round(self.slope_speed, 2)}",
-                f"y_velocity: {round(self.vel_y, 2)}",
-                f"Flag screen depth: {FlagSprite(self.mapmaster.flags[self.flag_index], self.camera).screen_depth}"
+                f"y_velocity: {round(self.vel_y, 2)}"
             ]
             draw_debug_text(self.screen, debug_text, (255, 255, 255))
 

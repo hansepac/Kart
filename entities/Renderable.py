@@ -92,7 +92,7 @@ class TerrainTriangle(Renderable):
 
     def draw(self, screen):
         # draw the object and calculate 
-        render_color = smooth_color_transition(self.colour, self.skycolour, self.screen_depth, transition_point=0.9, steepness=20)
+        render_color = smooth_color_transition(self.colour, self.skycolour, self.screen_depth, transition_point=0.98, steepness=40)
         
         if self.triangle_rendering:
             if len(self.screen_coords) > 2:
@@ -148,7 +148,7 @@ class DriverSprite(Renderable):
             screen.blit(scaled_img, img_rect)
 
 class FlagSprite(Renderable):
-    def __init__(self, flag_pos, camera, isCurrent = False):
+    def __init__(self, flag_pos, camera, isCurrent = False, isLast = False):
         super().__init__()
         self.homo_coords = [np.array([*flag_pos, 1])]
         
@@ -157,6 +157,8 @@ class FlagSprite(Renderable):
         self.screen_depth = 0
 
         self.flagImg = pg.image.load('assets/flag_green.png') if isCurrent else pg.image.load('assets/flag_red.png')
+        if isLast:
+            self.flagImg = pg.image.load('assets/sprite_finish.png')
 
     def draw(self, screen):
         if np.linalg.norm(self.screen_coords[0]) > 1:

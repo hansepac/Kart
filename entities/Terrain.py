@@ -2,18 +2,19 @@ import numpy as np
 from noise import pnoise2
 
 class TerrainDynamicCoordinator:
-    def __init__(self, grid_spacing = 1, noise_density_large = 0.01, detail_density = 0.12, noise_height_large = 3, detail_height = 0.3, radius=20, center = np.array([0, 0, 0])):
+    def __init__(self, grid_spacing = 1, noise_density_large = 0.01, detail_density = 0.12, noise_height_large = 3, detail_height = 0.3, color_density = 0.015, radius=20):
         self.grid_spacing = grid_spacing
         self.noise_density_large = noise_density_large
         self.detail_density = detail_density
         self.noise_height_large = noise_height_large
         self.detail_height = detail_height
+        self.color_density = color_density
         self.radius = radius
 
         # generate seed here so it makes it continuous
-        self.colour_base = np.random.randint(0, 1000)
         self.height_base_large = np.random.randint(0, 1000)
         self.detail_base = np.random.randint(0, 1000)
+        self.colour_base = np.random.randint(0, 1000, 4) # dimension determines number of biomes
 
     def get_seed_json(self):
         return {
@@ -61,6 +62,9 @@ class TerrainDynamic:
 
         self.center = center
 
+        # hard coded colors
+        self.colors = [np.array([145, 145, 145]), np.array([210, 157, 0]), np.array([119, 187, 65]), np.array([255, 255, 255])]
+
         # generate initial area
         for i in range(self.coordinator.radius*2):
             for j in range(self.coordinator.radius*2):
@@ -77,12 +81,35 @@ class TerrainDynamic:
                                 base=self.coordinator.height_base_large) + self.coordinator.detail_height* pnoise2((i - self.coordinator.radius + self.center[0]/self.coordinator.grid_spacing) * self.coordinator.detail_density, 
                                                                                     (j - self.coordinator.radius + self.center[2]/self.coordinator.grid_spacing) * self.coordinator.detail_density, 
                                                                                     base=self.coordinator.detail_base)
+        
+                    
 
         self.homo_points[j, i, 0:3] = self.points[j, i, :]
         self.homo_points[j, i, 3] = 1
 
-        self.colours_grid[j, i, :] = get_color_on_spectrum(pnoise2((i - self.coordinator.radius + self.center[0]/self.coordinator.grid_spacing)* self.coordinator.noise_density_large, 
-                                                                    (j - self.coordinator.radius + self.center[2]/self.coordinator.grid_spacing) * self.coordinator.noise_density_large, base=self.coordinator.colour_base))    
+        self.colours_grid[j, i, :] = self.calculate_perlin_color(i, j) 
+
+    def calculate_perlin_color(self, i, j):
+        # first get random unit vector 
+        unit_vec = np.zeros_like(self.coordinator.colour_base, dtype=float)
+        for k in range(unit_vec.shape[0]):
+            unit_vec[k] = pnoise2((i - self.coordinator.radius + self.center[0]/self.coordinator.grid_spacing)* self.coordinator.color_density, 
+                                  (j - self.coordinator.radius + self.center[2]/self.coordinator.grid_spacing) * self.coordinator.color_density, base=self.coordinator.colour_base[k])
+            unit_vec[k] += 0.5*pnoise2((i - self.coordinator.radius + self.center[0]/self.coordinator.grid_spacing)* self.coordinator.color_density*2, 
+                                  (j - self.coordinator.radius + self.center[2]/self.coordinator.grid_spacing) * self.coordinator.color_density*2, base=self.coordinator.colour_base[k] + 10)
+    
+        if np.linalg.norm(unit_vec) == 0:
+            unit_vec += np.ones_like(unit_vec)
+
+        # now do the quantum square and normalize to get a probability vector
+        p_vec = unit_vec**2 / np.linalg.norm(unit_vec)**2
+
+        final_color = np.zeros(3)
+        for i in range(len(p_vec)):
+            final_color += p_vec[i]*self.colors[i]
+
+        return final_color.astype(int)
+
 
     def pack_triangles(self):
         homo_triangles = []
@@ -405,41 +432,3 @@ def interpolate_y(x, z, P1, P2, P3):
 
     return y
     
-
-import matplotlib.colors as mcolors
-
-# Define the color spectrum using RGB values
-greens = ["#006400", "#228B22", "#32CD32", "#7CFC00", "#98FB98"]  # Dark to light green
-browns = ["#8B4513", "#A52A2A", "#D2691E", "#F4A460", "#DEB887"]   # Dark to light brown
-tans = ["#D2B48C", "#F4A300", "#D19C53", "#C0C0C0", "#F5F5DC"]    # Tan and beige
-greys = ["#2F4F4F", "#696969", "#A9A9A9", "#D3D3D3", "#DCDCDC"]   # Dark to light grey
-
-# Combine all colors into one list
-color_list = greens + browns + tans + greys
-
-# Create an interpolation function for color mapping
-def create_color_gradient(colors, num_colors=100):
-    cmap = mcolors.LinearSegmentedColormap.from_list("custom_cmap", colors, N=num_colors)
-    return cmap(np.linspace(0, 1, num_colors))
-
-# Function to get RGB values based on input number in the range -1 to 1
-def get_color_on_spectrum(number, color_list=color_list):
-    # Ensure the number is between -1 and 1
-    if number < -1 or number > 1:
-        raise ValueError("Input number must be between -1 and 1")
-    
-    # Map the number from [-1, 1] to [0, 1]
-    scaled_number = (number + 1) / 2
-    
-    # Create the color gradient
-    color_spectrum = create_color_gradient(color_list)
-    
-    # Map the scaled number to an index on the spectrum
-    index = int(scaled_number * (len(color_spectrum) - 1))
-    
-    # Return the RGB value corresponding to the input number
-    rgb = color_spectrum[index]
-    
-    # Convert to 0-255 range (matplotlib returns RGB as floats between 0 and 1)
-    return np.array([int(c * 255) for c in rgb])[0:3]
-

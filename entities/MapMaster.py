@@ -23,7 +23,7 @@ class MapMaster:
         self.flags = [track_origin]
         self.num_flags = num_flags
         phi = np.random.uniform(-np.pi, np.pi)
-        for _ in range(num_flags):
+        for _ in range(num_flags - 1):
             # rotate, move, and add a new flag
             phi += np.random.uniform(-np.pi/2, np.pi/2)
             r = np.random.uniform(3, 8)
