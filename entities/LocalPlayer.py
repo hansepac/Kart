@@ -49,6 +49,11 @@ class LocalPlayer(Driver):
         for i in range(self.mapmaster.num_flags):
             nontriangle_renderables.append(FlagSprite(self.mapmaster.flags[i], self.camera, isCurrent=(self.flag_index == i), isLast=(i == self.mapmaster.num_flags - 1)))
 
+        # add trees 
+        trees, biome_indices = self.terrainDynamic.get_trees()
+        for i in range(len(trees)):
+            nontriangle_renderables.append(TreeSprite(trees[i], biome_indices[i]))
+
         # sort renderables according to depth
         all_renderables = calculateRenderableScreenCoords(self.camera, nontriangle_renderables, triangle_renderables)
         all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)

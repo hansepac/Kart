@@ -1,5 +1,6 @@
 import numpy as np
 from noise import pnoise2
+import random
 
 class TerrainDynamicCoordinator:
     def __init__(self, grid_spacing = 1, noise_density_large = 0.01, detail_density = 0.12, noise_height_large = 3, detail_height = 0.3, color_density = 0.015, radius=20):
@@ -15,6 +16,8 @@ class TerrainDynamicCoordinator:
         self.height_base_large = np.random.randint(0, 1000)
         self.detail_base = np.random.randint(0, 1000)
         self.colour_base = np.random.randint(0, 1000, 4) # dimension determines number of biomes
+
+        self.tree_seed = np.random.randint(0, 1000)
 
     def get_seed_json(self):
         return {
@@ -50,7 +53,6 @@ class TerrainDynamicCoordinator:
 
 
 
-
 class TerrainDynamic:
     def __init__(self, coordinator, center = np.array([0, 0, 0])):
         self.coordinator = coordinator
@@ -59,11 +61,13 @@ class TerrainDynamic:
         self.points = np.zeros((self.coordinator.radius*2, self.coordinator.radius*2, 3))
         self.homo_points = np.zeros((self.coordinator.radius*2, self.coordinator.radius*2, 4))
         self.colours_grid = np.zeros((self.coordinator.radius*2, self.coordinator.radius*2, 3))
+        self.trees = np.zeros((self.coordinator.radius*2, self.coordinator.radius*2), dtype=int) # 1 if tree and 0 if not
+        self.biomes = np.zeros((self.coordinator.radius*2, self.coordinator.radius*2), dtype=int) # index of biome color
 
         self.center = center
 
         # hard coded colors
-        self.colors = [np.array([145, 145, 145]), np.array([210, 157, 0]), np.array([119, 187, 65]), np.array([255, 255, 255])]
+        self.colors = [np.array([145, 145, 145]), np.array([204, 102, 0]), np.array([102, 102, 51]), np.array([51, 153, 51])]
 
         # generate initial area
         for i in range(self.coordinator.radius*2):
@@ -82,12 +86,19 @@ class TerrainDynamic:
                                                                                     (j - self.coordinator.radius + self.center[2]/self.coordinator.grid_spacing) * self.coordinator.detail_density, 
                                                                                     base=self.coordinator.detail_base)
         
-                    
+        self.trees[j, i] = self.has_tree(self.points[j, i, 0], self.points[j, i, 2])    
 
         self.homo_points[j, i, 0:3] = self.points[j, i, :]
         self.homo_points[j, i, 3] = 1
 
-        self.colours_grid[j, i, :] = self.calculate_perlin_color(i, j) 
+        self.colours_grid[j, i, :], self.biomes[j, i] = self.calculate_perlin_color(i, j) 
+
+        
+
+    def has_tree(self, x, z):
+        combined_seed = hash((x, z, self.coordinator.tree_seed))
+        rng = random.Random(combined_seed)
+        return int(rng.random() <  0.01)
 
     def calculate_perlin_color(self, i, j):
         # first get random unit vector 
@@ -108,8 +119,17 @@ class TerrainDynamic:
         for i in range(len(p_vec)):
             final_color += p_vec[i]*self.colors[i]
 
-        return final_color.astype(int)
+        return final_color.astype(int), get_index_of_largest_element(p_vec)
 
+    def get_trees(self):
+        homo_trees = []
+        biomes = []
+        for i in range(self.trees.shape[1]):
+            for j in range(self.trees.shape[0]):
+                if self.trees[j, i] == 1:
+                    homo_trees.append(self.homo_points[j, i, :])
+                    biomes.append(self.biomes[j, i])
+        return homo_trees, biomes
 
     def pack_triangles(self):
         homo_triangles = []
@@ -135,6 +155,8 @@ class TerrainDynamic:
                 self.points[:, :-1, :] = self.points[:, 1:, :]
                 self.homo_points[:, :-1, :] = self.homo_points[:, 1:, :]
                 self.colours_grid[:, :-1, :] = self.colours_grid[:, 1:, :]
+                self.trees[:, :-1] = self.trees[:, 1:]
+                self.biomes[:, :-1] = self.biomes[:, 1:]
 
                 # calculate new points
                 for j in range(2*self.coordinator.radius):
@@ -147,6 +169,8 @@ class TerrainDynamic:
                 self.points[:, 1:, :] = self.points[:, :-1, :]
                 self.homo_points[:, 1:, :] = self.homo_points[:, :-1, :]
                 self.colours_grid[:, 1:, :] = self.colours_grid[:, :-1, :]
+                self.trees[:, 1:] = self.trees[:, :-1]
+                self.biomes[:, 1:] = self.biomes[:, :-1]
 
                 # calculate new points
                 for j in range(2*self.coordinator.radius):
@@ -161,6 +185,8 @@ class TerrainDynamic:
                 self.points[:-1, :, :] = self.points[1:, :, :]
                 self.homo_points[:-1, :, :] = self.homo_points[1:, :, :]
                 self.colours_grid[:-1, :, :] = self.colours_grid[1:, :, :]
+                self.trees[:-1, :] = self.trees[1:, :]
+                self.biomes[:-1, :] = self.biomes[1:, :]
 
                 # calculate new points
                 for i in range(2*self.coordinator.radius):
@@ -173,6 +199,8 @@ class TerrainDynamic:
                 self.points[1:, :, :] = self.points[:-1, :, :]
                 self.homo_points[1:, :, :] = self.homo_points[:-1, :, :]
                 self.colours_grid[1:, :, :] = self.colours_grid[:-1, :, :]
+                self.trees[1:, :] = self.trees[:-1, :]
+                self.biomes[1:, :] = self.biomes[:-1, :]
 
                 # calculate new points
                 for i in range(2*self.coordinator.radius):
@@ -432,3 +460,22 @@ def interpolate_y(x, z, P1, P2, P3):
 
     return y
     
+
+
+def get_index_of_largest_element(arr):
+    """
+    Returns the index of the largest element in the array.
+
+    Args:
+        arr: A list of numbers.
+
+    Returns:
+        The index of the largest element in the array.
+    """
+    if not list(arr):
+        return -1  # Return -1 for an empty array
+    max_index = 0
+    for i in range(1, len(list(arr))):
+        if list(arr)[i] > list(arr)[max_index]:
+            max_index = i
+    return max_index

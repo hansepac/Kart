@@ -167,6 +167,32 @@ class FlagSprite(Renderable):
             img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1] - int(scaled_img.get_height()*0.6)))
             screen.blit(scaled_img, img_rect)
 
+class TreeSprite(Renderable):
+    def __init__(self, tree_homo_pos, biome_idx):
+        super().__init__()
+        self.homo_coords = [tree_homo_pos]
+
+        self.screen_coords = None
+        self.screen_depth = 0
+
+        if biome_idx == 0:
+            self.treeImg = pg.image.load('assets/rocks.png')
+        elif biome_idx == 1:
+            self.treeImg = pg.image.load('assets/Catus.png')
+        elif biome_idx == 2:
+            self.treeImg = pg.image.load('assets/pine-tree-isaiah658.png')
+        else:
+            self.treeImg = pg.image.load('assets/arvore.png')
+
+    def draw(self, screen):
+        if np.linalg.norm(self.screen_coords[0]) > 1:
+            scale_factor = 0.05*(1 - self.screen_depth)**(-1)
+            scaled_img = pg.transform.scale(self.treeImg, (self.treeImg.get_width() / scale_factor, self.treeImg.get_height() / scale_factor))
+            img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1] - int(scaled_img.get_height()*0.6)))
+            screen.blit(scaled_img, img_rect)
+
+
+
 import math
 
 def smooth_color_transition(color1, color2, t, transition_point=0.8, steepness=10.0):

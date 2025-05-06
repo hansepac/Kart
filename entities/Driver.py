@@ -206,6 +206,14 @@ class Driver:
         self.phi = np.arctan2(self.direction_unitvec[2], self.direction_unitvec[0]) + np.pi/2
 
 
+        # trees
+        trees, _ = self.terrainDynamic.get_trees()
+        for tree in trees:
+            if np.linalg.norm(self.pos - tree[0:3]) < 0.1:
+                self.pos -= self.direction_unitvec * 0.2
+                self.speed = 0
+
+
         # If above ground, apply gravity
         if self.pos[1] > ground_height:
             self.vel_y += -self.gravity * dt / 30 / 10

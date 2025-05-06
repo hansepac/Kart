@@ -18,6 +18,8 @@ class MapMaster:
         if is_server:
             self.setup_game()
 
+        
+
     def setup_game(self, track_origin = np.array([0, 0, 0]), num_flags = 12):
         # Create Flags
         self.flags = [track_origin]
