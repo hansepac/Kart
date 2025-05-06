@@ -65,10 +65,8 @@ class LocalPlayer(Driver):
         player_renderable.draw(self.screen) # draw this player last
 
         window_x, window_y = self.screen.get_size()
-        radius1 = 60
-        draw_speedometer(self.screen, abs(self.speed/10), (radius1+30,radius1+30), radius=radius1, max_val=self.max_momentum/10, tick_step=10, name="")
-        radius2 = 80
-        draw_speedometer(self.screen, self.actual_speed*2500, (2*radius1+60 + radius2, radius1+30), radius=radius2, max_val=100, tick_step=10)
+        radius = 100
+        draw_speedometer(self.screen, self.actual_speed*2500, (radius+30, radius+30), radius=radius, max_val=100, tick_step=10)
         if not self.is_controller:
             show_keyboard_ui(self.screen, (window_x-350, window_y-350))
         
@@ -78,7 +76,11 @@ class LocalPlayer(Driver):
         phi2 = np.atan2(displacement_unit_vec[1], displacement_unit_vec[0])
         angle_between = (phi2 - phi1 ) % (2*np.pi)
         
-        draw_minimap(self.screen, angle_between, (radius1+30,3*radius1+60), radius=80)
+        draw_minimap(self.screen, angle_between, (radius+30,3*radius+60), radius=80)
+
+        font = pg.font.Font(None, 30)
+        text_surface = font.render(f"Rank: {self.rank}; Flag: {self.flag_index}/{self.mapmaster.num_flags}", True, (255, 255, 255))
+        self.screen.blit(text_surface, (0, 0))
         
         # draw debug text
         if self.gameDebugState != self.gameDebugState.NORMAL:
