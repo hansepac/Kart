@@ -62,6 +62,10 @@ class Driver:
             "use_item": False
         }
 
+        # this is a crude way of doing on button down for sounds. 
+        self.last_drift_state = False
+        self.last_go_state = False
+
     def disable_inputs(self):
         self.inputs = {
             "gas": False,

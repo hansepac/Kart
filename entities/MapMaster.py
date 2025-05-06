@@ -99,9 +99,33 @@ class MapMaster:
         x_size = x_size // 2 if len(self.local_players) > 1 else x_size
         y_size = y_size // 2 if len(self.local_players) > 2 else y_size 
 
+        sound_drivers = 0
+        sound_idlers = 0
         for i, player in enumerate(self.local_players):
             player.render_player_view(c.clock)
             self.screen.blit(player.screen, ((i % 2)*x_size, (i // 2)*y_size))
+            
+            # get sound stuff 
+            if player.inputs["gas"]:
+                sound_drivers += 1
+                if player.last_go_state == False:
+                    c.soundmaster.go_hit.play()
+                    player.last_go_state = True
+            else:
+                player.last_go_state = False
+                sound_idlers += 1
+
+            if player.inputs["drift"]:
+                if player.last_drift_state == False:
+                    c.soundmaster.drifting_hit.play()
+                    player.last_drift_state = True 
+            else:
+                player.last_drift_state = False
+
+        c.soundmaster.drive_sound_count = sound_drivers
+        c.soundmaster.idle_sound_count = sound_idlers
+        c.soundmaster.check_runtime_sounds()
+        
 
 
 

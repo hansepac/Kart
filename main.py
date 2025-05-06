@@ -39,6 +39,11 @@ if __name__ == "__main__":
     win_x, win_y = c.screen.get_size()
     mc = MenuCore(c.screen, c.gameState, c.onlineState, win_x, win_y)
 
+    # sound master
+    from ui.SoundMaster import SoundMaster
+    sm = SoundMaster()
+    c.soundmaster = sm
+
     # GAME LOOP
     c.game_running = True
 
