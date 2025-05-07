@@ -3,7 +3,7 @@ from .Driver import Driver
 from .Camera import Camera
 from input import Controller
 from utils.states import GameDebugState
-from ui import draw_debug_text, draw_speedometer, show_keyboard_ui, draw_minimap
+from ui import draw_debug_text, draw_speedometer, show_keyboard_ui, draw_minimap, draw_boost_bar
 from entities.Renderable import *
 
 class LocalPlayer(Driver):
@@ -77,6 +77,7 @@ class LocalPlayer(Driver):
         angle_between = (phi2 - phi1 ) % (2*np.pi)
         
         draw_minimap(self.screen, angle_between, (radius+30,3*radius+60), radius=80)
+        draw_boost_bar(self.screen, self.drift_multiplier, self.drift_multiplier_max, self.drift_boost_threshold)
 
         font = pg.font.Font(None, 30)
         text_surface = font.render(f"Rank: {self.rank}; Flag: {self.flag_index}/{self.mapmaster.num_flags}", True, (255, 255, 255))

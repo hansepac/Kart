@@ -25,9 +25,12 @@ class Driver:
         self.drift_time = 0
         self.drift_angle = 0
         self.drift_boost = 0.5
+        self.drift_boost_threshold = 1
         self.drift_direction = 0
         self.drift_turn_speed_mult = 1.5
         self.drift_speed_mult = 0.6
+        self.drift_multiplier = 0
+        self.drift_multiplier_max = 2
 
         self.mapmaster = mapmaster
 
@@ -122,8 +125,8 @@ class Driver:
 
         ground_height = self.terrainDynamic.get_ground_height(self.pos)
 
-        impact = not self.is_on_ground and self.pos[1] - ground_height < self.distance_to_ground_threshold
-
+        self.drift_multiplier = np.clip(self.drift_time/100 + self.drift_angle, 0, self.drift_multiplier_max)
+        
         self.is_on_ground = self.pos[1] - ground_height < self.distance_to_ground_threshold
 
         if self.is_on_ground:
@@ -257,8 +260,7 @@ class Driver:
 
     def reset_drift(self, boost = False):
         if boost:
-            self.drift_multiplier = np.clip(self.drift_time/100 + self.drift_angle, 0, 2)
-            if self.drift_multiplier > 1:
+            if self.drift_multiplier > self.drift_boost_threshold:
                 self.other_forces += self.direction_unitvec * self.drift_boost * self.drift_multiplier
         self.drift_time = 0
         self.drift_angle = 0
