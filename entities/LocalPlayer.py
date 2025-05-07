@@ -66,18 +66,28 @@ class LocalPlayer(Driver):
 
         window_x, window_y = self.screen.get_size()
         radius = 100
-        draw_speedometer(self.screen, self.actual_speed*2500, (radius+30, radius+30), radius=radius, max_val=100, tick_step=10)
+        draw_speedometer(self.screen, self.actual_speed*2500, (radius+70, radius+70), radius=radius, max_val=100, tick_step=10)
+        
         if not self.is_controller:
             show_keyboard_ui(self.screen, (window_x-350, window_y-350))
         
         
         # UI stuff
         draw_minimap(self.screen, self.pos, self.direction_unitvec, nontriangle_renderables, (30,2*radius+60), radius=100)
-        draw_boost_bar(self.screen, self.drift_multiplier, self.drift_multiplier_max, self.drift_boost_threshold)
+        draw_boost_bar(self.screen, self.drift_multiplier, self.drift_multiplier_max, self.drift_boost_threshold, x=20, y = 80)
 
-        font = pg.font.Font(None, 30)
-        text_surface = font.render(f"Rank: {self.rank}; Flag: {self.flag_index}/{self.mapmaster.num_flags}", True, (255, 255, 255))
-        self.screen.blit(text_surface, (0, 0))
+        # Stylish racing HUD text
+        font = pg.font.Font("assets/fonts/SpeedRush.ttf", 40) if pg.font.get_init() else pg.font.Font(None, 40)
+        text = f"Rank: {self.rank}  Flag: {self.flag_index}/{self.mapmaster.num_flags}"
+        pulse = int(128 + 127 * math.sin(pg.time.get_ticks() * 0.003))
+        color = (255, pulse, 0)
+        shadow = font.render(text, True, (0, 0, 0))
+        main = font.render(text, True, color)
+        box = pg.Surface(main.get_size(), pg.SRCALPHA); box.fill((0, 0, 0, 150))
+        self.screen.blit(box, (10, 10))
+        self.screen.blit(shadow, (12, 12))
+        self.screen.blit(main, (10, 10))
+
         
         # draw debug text
         if self.gameDebugState != self.gameDebugState.NORMAL:

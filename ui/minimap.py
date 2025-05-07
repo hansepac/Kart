@@ -6,7 +6,7 @@ font = pg.font.SysFont(None, 20)
 
 def draw_minimap(screen, map_pos, map_direction_unitvec, non_triangle_renderables, origin:tuple, radius = 100, buffer=20):
     
-    map_scale_factor = 50
+    map_scale_factor = 35
 
     mm_screen = pg.Surface((2*radius + 2*buffer, 2*radius + 2*buffer), pg.SRCALPHA)
     # # Draw needle
