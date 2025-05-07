@@ -67,7 +67,7 @@ def render_triangle(triangle_renderable, camera):
     triangle_renderable.triangle_rendering = True
     triangle_renderable.screen_coords = camera.drawTriangle(triangle_renderable.homo_coords)
     if len(triangle_renderable.screen_coords) > 1:
-        triangle_renderable.screen_depth = np.average(np.array(triangle_renderable.screen_coords)[:, 2])
+        triangle_renderable.screen_depth = np.max(np.array(triangle_renderable.screen_coords)[:, 2])
     elif len(triangle_renderable.screen_coords) == 1:
         triangle_renderable.screen_depth = triangle_renderable.screen_coords[0][2]
     else:
@@ -125,11 +125,10 @@ class DriverSprite(Renderable):
         division = round(relative_angle / (np.pi/4)) % 8
 
         # turn more if in first person 
-        if division == 0:
-            if driver_object.drift_direction > 0.5:
-                division = 1
-            elif driver_object.drift_direction < -0.5:
-                division = 7
+        if driver_object.drift_direction > 0.5:
+            division = (division + 1) % 8
+        elif driver_object.drift_direction < -0.5:
+                division = (division - 1) % 8
 
         self.carImg = pg.image.load(f'assets/car{driver_object.car_sprite}_{division}.png')
 
@@ -188,7 +187,7 @@ class TreeSprite(Renderable):
         if np.linalg.norm(self.screen_coords[0]) > 1:
             scale_factor = 0.05*(1 - self.screen_depth)**(-1)
             scaled_img = pg.transform.scale(self.treeImg, (self.treeImg.get_width() / scale_factor, self.treeImg.get_height() / scale_factor))
-            img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1] - int(scaled_img.get_height()*0.6)))
+            img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1] - int(scaled_img.get_height()*0.5)))
             screen.blit(scaled_img, img_rect)
 
 

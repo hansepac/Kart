@@ -8,7 +8,7 @@ class Driver:
         self.is_alien = is_alien
         self.id = create_id()
         self.pos = pos.copy()
-        self.speed = 0
+        self.speed = 0.01
         self.vel_y = 0
         self.acc_y = 0
         self.omega = 0 # azimuthal velocity
@@ -17,6 +17,7 @@ class Driver:
         self.other_forces = np.zeros(3) # other forces acting on the car
 
         self.flag_index = 0 
+        self.rank = 0
 
         self.impact_dt = 0
 
@@ -52,6 +53,8 @@ class Driver:
         self.friction_coef = 0.3 # may depend on terrain
 
         self.car_sprite = car_sprite
+
+        self.is_AI = False
 
         self.inputs = {
             "gas": False,
@@ -208,7 +211,7 @@ class Driver:
         # trees
         trees, _ = self.terrainDynamic.get_trees()
         for tree in trees:
-            if np.linalg.norm(self.pos - tree[0:3]) < 0.1:
+            if np.linalg.norm(self.pos - tree[0:3]) < 0.1 and not self.is_AI:
                 self.pos -= self.direction_unitvec * 0.2
                 self.speed = 0
 

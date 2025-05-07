@@ -3,7 +3,7 @@ from noise import pnoise2
 import random
 
 class TerrainDynamicCoordinator:
-    def __init__(self, grid_spacing = 1, noise_density_large = 0.01, detail_density = 0.12, noise_height_large = 3, detail_height = 0.3, color_density = 0.015, radius=20):
+    def __init__(self, grid_spacing = 1, noise_density_large = 0.01, detail_density = 0.12, noise_height_large = 3, detail_height = 0.3, color_density = 0.01, radius=20):
         self.grid_spacing = grid_spacing
         self.noise_density_large = noise_density_large
         self.detail_density = detail_density

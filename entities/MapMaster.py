@@ -4,6 +4,7 @@ from entities.Terrain import TerrainDynamic
 from entities.LocalPlayer import LocalPlayer
 from entities.Terrain import TerrainDynamicCoordinator
 from entities.Driver import Driver
+from entities.AIDriver import AIDriver
 
 class MapMaster:
     def __init__(self, screen, is_server = False):
@@ -80,6 +81,7 @@ class MapMaster:
             if driver.is_alien:
                 continue
             else:
+                driver.terrainDynamic.update_grid(driver.pos)
                 driver.control(c.events)
                 driver.updatePosition(c.dt)
                 driver_dat.append(driver.get_data())
@@ -89,10 +91,9 @@ class MapMaster:
                     driver.flag_index += 1
 
         for player in self.local_players:
-            player.terrainDynamic.update_grid(player.pos)
             player.updateCameraPositon()
 
-        
+        self.sortPlayers()
       
     def draw(self, c):        
 
@@ -155,6 +156,18 @@ class MapMaster:
         self.local_players.append(new_local_player)
         self.drivers.append(new_local_player)
         
-            
+    def addAIPlayer(self, pos=np.array([0.0, 0.0, 0.0]), direction_unitvec=np.array([1.0, 0.0, 0.0]), car_sprite = 2):
+        self.drivers.append(AIDriver(self, pos=pos, direction_unitvec=direction_unitvec, car_sprite=car_sprite))
+
+
+    def sortPlayers(self):
+        self.drivers = sorted(self.drivers,
+                                key=lambda d: (
+                                    -d.flag_index,
+                                    np.linalg.norm(d.pos - self.flags[d.flag_index])
+                                )
+                            )
+        for i in range(len(self.drivers)):
+            self.drivers[i].rank = i + 1
 
         
