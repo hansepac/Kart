@@ -20,6 +20,7 @@ class LocalPlayer(Driver):
         self.gameDebugState: GameDebugState = GameDebugState(0)
 
         self.screen = player_screen
+        self.name = "Local Player"
 
     def render_player_view(self, clock):
 
@@ -27,7 +28,6 @@ class LocalPlayer(Driver):
         sky_color = (0, round(angle*200), round(angle*255))
         self.screen.fill(sky_color)
 
-        # iterate through players is iterating through cameras. 
         self.camera.updateCamMat() # update camera matrices once per frame
 
         # make renderables
@@ -66,7 +66,7 @@ class LocalPlayer(Driver):
 
         window_x, window_y = self.screen.get_size()
         radius = 100
-        draw_speedometer(self.screen, self.actual_speed*2500, (radius+70, radius+70), radius=radius, max_val=100, tick_step=10)
+        draw_speedometer(self.screen, self.actual_speed*1250, (radius+70, radius+70), radius=radius, max_val=100, tick_step=10)
         
         if not self.is_controller:
             show_keyboard_ui(self.screen, (window_x-350, window_y-350))
@@ -78,7 +78,7 @@ class LocalPlayer(Driver):
 
         # Stylish racing HUD text
         font = pg.font.Font("assets/fonts/SpeedRush.ttf", 40) if pg.font.get_init() else pg.font.Font(None, 40)
-        text = f"Rank: {self.rank}  Flag: {self.flag_index}/{self.mapmaster.num_flags}"
+        text = f"Rank: {self.rank}  Flag: {self.flag_index if not self.completed else self.mapmaster.num_flags}/{self.mapmaster.num_flags}"
         pulse = int(128 + 127 * math.sin(pg.time.get_ticks() * 0.003))
         color = (255, pulse, 0)
         shadow = font.render(text, True, (0, 0, 0))

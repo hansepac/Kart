@@ -1,6 +1,6 @@
 from entities.Driver import Driver
 import numpy as np
-from random import uniform
+from random import uniform, choice
 
 class AIDriver(Driver):
     def __init__(self, mapmaster, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), car_sprite = 0):
@@ -13,6 +13,11 @@ class AIDriver(Driver):
         self.no_drift_chance = uniform(0, 0.4)
         self.turn_rate = uniform(1, 3)
         self.drift_threshold = uniform(0, 1)
+
+        adjectives = ["Speedy", "Blazing", "Turbo", "Rapid", "Slick", "Furious", "Wild", "Stealthy", "Iron", "Crimson"]
+        nouns = ["Falcon", "Viper", "Bullet", "Racer", "Thunder", "Comet", "Shadow", "Rocket", "Storm", "Blaze"]
+        self.name = choice(adjectives) + " " + choice(nouns)
+
         
     def control(self, events):
         ''' This function looks at the game state and figures out 

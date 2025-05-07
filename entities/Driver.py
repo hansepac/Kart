@@ -18,6 +18,7 @@ class Driver:
 
         self.flag_index = 0 
         self.rank = 0
+        self.completed = 0
 
         self.impact_dt = 0
 
@@ -37,6 +38,8 @@ class Driver:
         terrainPos = pos.copy()
         terrainPos[1] = 0
         self.terrainDynamic = self.mapmaster.createTerrainDynamic(terrainPos)
+        
+        self.name = "Driver"
 
         # TODO: clean out the old stuff here
 
@@ -71,6 +74,8 @@ class Driver:
         # this is a crude way of doing on button down for sounds. 
         self.last_drift_state = False
         self.last_go_state = False
+
+        
 
     def disable_inputs(self):
         self.inputs = {
@@ -241,7 +246,7 @@ class Driver:
         vel_final[1] = self.vel_y
         self.pos += vel_final / 30
         self.past_speeds[:-1] = self.past_speeds[1:] # shift old values
-        self.past_speeds[-1] = np.linalg.norm(vel_final)/30
+        self.past_speeds[-1] = np.sqrt(vel_final[0]**2 + vel_final[2]**2)/30
         self.actual_speed = np.mean(self.past_speeds)
 
         # clip ground if below

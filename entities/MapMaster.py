@@ -5,6 +5,7 @@ from entities.LocalPlayer import LocalPlayer
 from entities.Terrain import TerrainDynamicCoordinator
 from entities.Driver import Driver
 from entities.AIDriver import AIDriver
+from utils.states import GameState
 
 class MapMaster:
     def __init__(self, screen, is_server = False):
@@ -18,6 +19,8 @@ class MapMaster:
         self.is_server = is_server
         if is_server:
             self.setup_game()
+
+        self.completed_drivers = []
 
         
 
@@ -88,7 +91,17 @@ class MapMaster:
 
                 # check for flag indices
                 if np.linalg.norm(driver.pos - self.flags[driver.flag_index]) < 0.2:
-                    driver.flag_index += 1
+                    if driver.flag_index >= self.num_flags - 1:
+                        if not driver.completed:
+                            driver.completed = True
+                            self.completed_drivers.append(driver)
+
+                            if len(self.completed_drivers) == len(self.drivers):
+                                c.gameState = GameState(0)
+                                pg.mouse.set_visible(True)
+                                c.soundmaster.clear_game_sounds()
+                    else:
+                        driver.flag_index += 1
 
         for player in self.local_players:
             player.updateCameraPositon()
@@ -128,6 +141,27 @@ class MapMaster:
         c.soundmaster.drive_sound_count = sound_drivers
         c.soundmaster.idle_sound_count = sound_idlers
         c.soundmaster.check_runtime_sounds()
+
+
+        # Draw scoreboard:
+        font = pg.font.SysFont("papyrus", 24)
+        padding = 20
+        text_color = (255, 255, 255)
+        bg_color = (50, 50, 50, 150)  # RGBA: dark gray with alpha 150 (out of 255)
+
+        for i, driver in enumerate(self.completed_drivers):
+            text_str = f"{i + 1}. {driver.name}"
+            text_surf = font.render(text_str, True, text_color)
+            text_rect = text_surf.get_rect()
+            text_rect.topright = (self.screen.get_width() - padding, padding + i * 30)
+
+            # Create transparent background box
+            box_surf = pg.Surface((text_rect.width + 10, text_rect.height + 4), pg.SRCALPHA)
+            box_surf.fill(bg_color)
+
+            # Blit box, then text
+            self.screen.blit(box_surf, (text_rect.right - box_surf.get_width(), text_rect.top - 2))
+            self.screen.blit(text_surf, text_rect)
         
 
 

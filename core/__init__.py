@@ -51,5 +51,5 @@ def game_init(c: Core):
     gc.mapMaster.addAIPlayer(car_sprite=1)
     gc.mapMaster.addAIPlayer(car_sprite=2)
     gc.mapMaster.addAIPlayer(car_sprite=3)
-    gc.mapMaster.addLocalPlayer(is_controller=True, car_sprite=0)
+    gc.mapMaster.addLocalPlayer(is_controller=False, car_sprite=0)
     return gc

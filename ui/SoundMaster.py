@@ -33,5 +33,13 @@ class SoundMaster:
             self.driving_sound.play(loops=-1)
             self.drive_sound_is_playing = True
 
+    def clear_game_sounds(self):
+        self.drive_sound_count = 0
+        self.idle_sound_count = 0
+        self.drive_sound_is_playing = False
+        self.idle_sound_is_playing = False
+        self.idle_sound.stop()
+        self.driving_sound.stop()
+
 
         
