@@ -85,7 +85,7 @@ class Driver:
         self.direction_unitvec = np.array(data_json["direction_unitvec"])
         self.is_on_ground = data_json["is_on_ground"]
 
-    def control(self, events):
+    def control(self):
         return self.inputs
     
     def get_speed(self, x, s = 0.8, r=0.3, a=0.0055):

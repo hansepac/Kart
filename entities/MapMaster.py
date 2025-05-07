@@ -85,7 +85,7 @@ class MapMaster:
             if driver.is_alien:
                 continue
             else:
-                driver.control(c.events)
+                driver.control()
                 driver.updatePosition(c.dt)
                 driver_dat.append(driver.get_data())
 

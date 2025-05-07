@@ -6,59 +6,88 @@ from input import Controller
 color_phase = 0
 
 class MenuScreen:
-    def __init__(self, screen, win_x, win_y, buttons = [
+    def __init__(self, c, buttons = [
             {"text": "Test", "value": None},
             {"text": "Example", "value": None}
         ]):
         self.button_focus = None
-        self.screen = screen
+        self.screen = c.screen
         self.bg_color = [100, 200, 255]
         self.hover_scale = 1.2
         self.font = pg.font.SysFont(None, 48)
         self.base_w, self.base_h = 200, 60
-        self.win_x, self.win_y = win_x, win_y
+        self.win_x, self.win_y = c.win_x, c.win_y
         self.spacing = 20
-        self.start_y = win_y // 2 - ((self.base_h + self.spacing) * len(self.buttons) // 2)
+        self.start_y = c.win_y // 2 - ((self.base_h + self.spacing) * len(self.buttons) // 2)
         self.buttons = buttons
         self.button_rects_init()
+        self.click = False
+        self.back = False
 
     def button_rects_init(self):
         self.button_rects = []
         for i, btn in enumerate(self.buttons):
             rect = pg.Rect(self.win_x //2 - self.base_w//2, self.start_y + i*(self.base_h + self.spacing), self.base_w, self.base_h)
             self.button_rects.append(rect)
-        
-        self.mouse_pos = pg.mouse.get_pos()
 
-    def update(self, events, dt):
+    def update_bg_color(self, c):
         global color_phase
         # Update the background color based on the color phase
-        color_phase += dt * 0.25
+        color_phase += c.dt * 0.25
         self.bg_color[0] = int((sin(color_phase) * 127) + 128)         # Red
         self.bg_color[1] = int((sin(color_phase + 2*pi/3) * 127) + 128)  # Green
         self.bg_color[2] = int((sin(color_phase + 4*pi/3) * 127) + 128)  # Blue
 
-        # Get Button Clicks
-        self.mouse_pos = pg.mouse.get_pos()
-        click = False
-        for event in events:
-            if event.type == pg.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
+    def update_button_focus(self, c):
+        # If mouse is hidden (from a menu input), turn on button focus mode
+        if not pg.mouse.get_visible():
+            if self.button_focus is None:
+                self.button_focus = [0, 0]
+
+        # If mouse moves
+        if pg.mouse.get_rel() != (0, 0):
+            self.button_focus = None
+            pg.mouse.set_visible(True)
+
+        self.click = False
+        self.back = False
+
+        for controller in c.controllers:
+            if controller.ld:
+                self.button_focus[0] += 1 if self.button_focus[0] < len(self.buttons) - 1 else 0
+            elif controller.lu:
+                self.button_focus[0] -= 1 if self.button_focus[0] > 0 else 0
+            if controller.click:
+                self.click = True
+            if controller.back:
+                self.back = True
+
+    def update(self, c):
+        # Update Background Color
+        self.update_bg_color(c)
+        # Udpate controller menuing bools, and connects available controllers
+        for controller in c.controllers:
+            controller.update_controller(c)
+        # Update button focus
+        self.update_button_focus(c)
 
         for i, rect in enumerate(self.button_rects):
-            hovered = rect.collidepoint(self.mouse_pos)
+            if self.button_focus is not None:
+                hovered = i == self.button_focus[0]
+            else:
+                hovered = rect.collidepoint(pg.mouse.get_pos())
 
-            if hovered and click:
-                return self.button_action(self.buttons[i])
-        return None
+            if hovered and self.click:
+                c = self.button_action(c, self.buttons[i])
+        return c
     
-    def button_action(self, button, state):
+    def button_action(self, c, button):
         if button["text"] == "Example":
             pg.quit()
             sys.exit()
         elif button["text"] == "Test":
-            return button
+            c.gameState = c.gameState.TITLE
+            return c
 
     def draw(self):
         self.screen.fill(self.bg_color)
@@ -66,31 +95,34 @@ class MenuScreen:
 
     def draw_buttons(self):
         for i, rect in enumerate(self.button_rects):
-                hovered = rect.collidepoint(self.mouse_pos)
-                scale = self.hover_scale if hovered else 1.0
-                w, h = int(self.base_w * scale), int(self.base_h * scale)
-                new_rect = pg.Rect(0, 0, w, h)
-                new_rect.center = rect.center
+            if self.button_focus is not None:
+                hovered = i == self.button_focus[0]
+            else:
+                hovered = rect.collidepoint(pg.mouse.get_pos())
+            scale = self.hover_scale if hovered else 1.0
+            w, h = int(self.base_w * scale), int(self.base_h * scale)
+            new_rect = pg.Rect(0, 0, w, h)
+            new_rect.center = rect.center
 
-                button_color = (255,255,255) if hovered else self.bg_color
-                text_color = self.bg_color if hovered else (255, 255, 255)
-                pg.draw.rect(self.screen, button_color, new_rect, border_radius=10)
-                pg.draw.rect(self.screen, (255, 255, 255), new_rect, 3, border_radius=10)
+            button_color = (255,255,255) if hovered else self.bg_color
+            text_color = self.bg_color if hovered else (255, 255, 255)
+            pg.draw.rect(self.screen, button_color, new_rect, border_radius=10)
+            pg.draw.rect(self.screen, (255, 255, 255), new_rect, 3, border_radius=10)
 
-                label = self.font.render(self.buttons[i]["text"], True, text_color)
-                label_rect = label.get_rect(center=new_rect.center)
-                self.screen.blit(label, label_rect)
+            label = self.font.render(self.buttons[i]["text"], True, text_color)
+            label_rect = label.get_rect(center=new_rect.center)
+            self.screen.blit(label, label_rect)
         
 
 
 class TitleScreen(MenuScreen):
-    def __init__(self, screen, gameState, win_x, win_y):
+    def __init__(self, c):
         self.buttons = [
-            {"text": "Start", "value": gameState.JOIN},
-            {"text": "Controls", "value": gameState.CONTROLS},
+            {"text": "Start", "value": c.gameState.JOIN},
+            {"text": "Controls", "value": c.gameState.CONTROLS},
             {"text": "Quit", "value": None}
         ]
-        super().__init__(screen, win_x, win_y, self.buttons)
+        super().__init__(c, self.buttons)
         # Load original image
         original_logo = pg.image.load("assets/logo.png")
         orig_w, orig_h = original_logo.get_size()
@@ -105,7 +137,7 @@ class TitleScreen(MenuScreen):
 
         # Position the logo
         self.logo_rect = self.logo_sprite.get_rect(
-            center=(win_x // 2, round(self.start_y - new_h // 2 - self.spacing*2))
+            center=(c.win_x // 2, round(self.start_y - new_h // 2 - self.spacing*2))
         )
         self.button_rects_init()
 
@@ -115,63 +147,61 @@ class TitleScreen(MenuScreen):
         # Draw the image and its border
         self.screen.blit(self.logo_sprite, self.logo_rect)
 
-    def button_action(self, button):
+    def button_action(self, c, button):
         if button["text"] == "Quit":
             pg.quit()
             sys.exit()
         else:
-            return button
+            c.gameState = button["value"]
+        return c
 
 class OnlineModeGameScreen(MenuScreen):
-    def __init__(self, screen, gameState, onlineState, win_x, win_y):
+    def __init__(self, c):
         self.buttons = [
-            {"text": "Host", "value": [gameState.IN_GAME, onlineState.HOST]},
-            {"text": "Join", "value": [gameState.IN_GAME, onlineState.CLIENT]},
-            {"text": "Local", "value": [gameState.IN_GAME, onlineState.LOCAL]},
-            {"text": "Back", "value": [gameState.TITLE, onlineState.LOCAL]}
+            {"text": "Host", "value": [c.gameState.IN_GAME, c.onlineState.HOST]},
+            {"text": "Join", "value": [c.gameState.IN_GAME, c.onlineState.CLIENT]},
+            {"text": "Local", "value": [c.gameState.IN_GAME, c.onlineState.LOCAL]},
+            {"text": "Back", "value": [c.gameState.TITLE, c.onlineState.LOCAL]}
         ]
-        super().__init__(screen, win_x, win_y, self.buttons)
+        super().__init__(c, self.buttons)
 
-    def button_action(self, button):
-        if button["value"] == "Host":
-            pg.mouse.set_visible(False)
-        else:
-            pg.mouse.set_visible(True)
-        return button
+    def button_action(self, c, button):
+        c.gameState, c.onlineState = button["value"]
+        return c
         
 class FindGameMenuScreen(MenuScreen):
-    def __init__(self, screen, gameState, onlineState, win_x, win_y):
+    def __init__(self, c):
         self.buttons = [
-            {"text": "Find Game", "value": [gameState.IN_GAME, onlineState.CLIENT]},
-            {"text": "Back", "value": [gameState.TITLE, onlineState.LOCAL]}
+            {"text": "Find Game", "value": [c.gameState.IN_GAME, c.onlineState.CLIENT]},
+            {"text": "Back", "value": [c.gameState.TITLE, c.onlineState.LOCAL]}
         ]
-        super().__init__(screen, win_x, win_y, self.buttons)
+        super().__init__(c, self.buttons)
 
-    def button_action(self, button, states):
-        if button["value"][0] == states[0].IN_GAME:
-            pg.mouse.set_visible(False)
-            return button["value"][0], button["value"][1]
-        else:
-            pg.mouse.set_visible(True)
-            return button["value"][0], button["value"][1]
+    # def button_action(self, c, button):
+    #     if button["value"][0] == states[0].IN_GAME:
+    #         pg.mouse.set_visible(False)
+    #         return button["value"][0], button["value"][1]
+    #     else:
+    #         pg.mouse.set_visible(True)
+    #         return button["value"][0], button["value"][1]
         
-class ChangeControlsScreen(MenuScreen):
-    def __init__(self, screen, gameState, onlineState, win_x, win_y):
-        self.buttons = [
-            {"text": "Find Game", "value": [gameState.IN_GAME, onlineState.CLIENT]},
-            {"text": "Back", "value": [gameState.TITLE, onlineState.LOCAL]}
-        ]
-        super().__init__(screen, win_x, win_y, self.buttons)
+# class ChangeControlsScreen(MenuScreen):
+#     def __init__(self, c):
+#         self.buttons = [
+#             {"text": "Find Game", "value": [c.gameState.IN_GAME, c.onlineState.CLIENT]},
+#             {"text": "Back", "value": [c.gameState.TITLE, c.onlineState.LOCAL]}
+#         ]
+#         super().__init__(c, self.buttons)
 
-    def button_action(self, button, states):
-        if button["value"][0] == states[0].IN_GAME:
-            pg.mouse.set_visible(False)
-            return button["value"][0], button["value"][1]
-        else:
-            pg.mouse.set_visible(True)
-            return button["value"][0], button["value"][1]
+#     def button_action(self, c, button):
+#         if button["value"][0] == states[0].IN_GAME:
+#             pg.mouse.set_visible(False)
+#             return button["value"][0], button["value"][1]
+#         else:
+#             pg.mouse.set_visible(True)
+#             return button["value"][0], button["value"][1]
         
-class ControllerScreen:
+class ControllerScreen(MenuScreen):
     def __init__(self, c):
         self.screen = c.screen
         self.focused = [0,0]
@@ -190,14 +220,15 @@ class ControllerScreen:
             "Drift": "drift",
             "Use Item": "use_item"
         }
+        self.buttons = [[{"text": "Input Type", "is_button": False}]]
         self.contol_attrs = [value for value in self.controls.values()]
         if c.DEV_MODE:
             self.controls["Debug"] = "enable_debug_mode"
+        super().__init__(c, self.buttons)
         self.update_buttons(c)
     
     def button_action(self, c, i, j):
         button = self.buttons[j][i]
-        print(f"Button: {button}")
         if button["text"] == "Add":
             c.controllers.append(Controller(is_controller=True))
         elif button["text"] == "Back":
@@ -206,14 +237,12 @@ class ControllerScreen:
             if button["text"] == "Remove":
                 c.controllers.pop(j - 1)
             elif button["text"] == "Keyboard" or button["text"] == "Controller":
-                c.controllers[j - 1].is_controller = not c.controllers[j - 1].is_controller
+                c.controllers[j - 1].switch_input_mode(c)
             else:
                 while True:
                     for event in pg.event.get():
                         if event.type == pg.KEYDOWN:
-                            print(pg.key.name(getattr(c.controllers[j-1], self.contol_attrs[i-1])))
                             setattr(c.controllers[j - 1], self.contol_attrs[i-1], event.key)
-                            print(pg.key.name(getattr(c.controllers[j-1], self.contol_attrs[i-1])))
                             return c
                         elif event.type == pg.JOYBUTTONDOWN:
                             setattr(c.controllers[j - 1], self.contol_attrs[i-1], event.button)
@@ -229,12 +258,22 @@ class ControllerScreen:
         self.buttons = [[{"text": "Input Type", "is_button": False}]]
         self.buttons[0] += [{"text": key, "is_button": False} for key in self.controls]
 
+        controller_buttons = ["A", "B", "Y", "X", "LB", "RB", "MENU"]
+
+        def get_input_value(controller, value):
+            if controller.joystick is not None:
+                if getattr(controller, value) >= len(controller_buttons):
+                    return "UNKN"
+                return controller_buttons[getattr(controller, value)]
+            else:
+                return pg.key.name(getattr(controller, value))
+
         for i, controller in enumerate(c.controllers):
             input_type = "Controller" if controller.is_controller else "Keyboard"
             self.buttons.append(
                 [
                     {"text": input_type, "is_button": True},
-                    *[{"text": f"{pg.key.name(getattr(controller, value))}", "is_button": True} for value in self.controls.values()],
+                    *[{"text": f"{get_input_value(controller, value)}", "is_button": True} for value in self.controls.values()],
                     {"text": "Remove", "is_button": True},
                 ]
             )
@@ -263,24 +302,22 @@ class ControllerScreen:
             self.button_rects.append(col_rects)
 
     def update(self, c):
-        global color_phase
-        # Update the background color based on the color phase
-        color_phase += c.dt * 0.25
-        self.bg_color[0] = int((sin(color_phase) * 127) + 128)         # Red
-        self.bg_color[1] = int((sin(color_phase + 2*pi/3) * 127) + 128)  # Green
-        self.bg_color[2] = int((sin(color_phase + 4*pi/3) * 127) + 128)  # Blue
+        self.update_bg_color(c)
+        # Udpate controller menuing bools, and connects available controllers
+        for controller in c.controllers:
+            controller.update_controller(c)
 
-        # Get Button Clicks
-        self.mouse_pos = pg.mouse.get_pos()
-        click = False
-        for event in c.events:
-            if event.type == pg.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
+        self.update_buttons(c)
+
+        self.update_button_focus(c)
 
         for j, col in enumerate(self.button_rects):
             for i, rect in enumerate(col):
-                if rect.collidepoint(self.mouse_pos) and click and self.buttons[j][i]["is_button"]:
+                if self.button_focus is not None:
+                    hovered = i == self.button_focus[0]
+                else:
+                    hovered = rect.collidepoint(pg.mouse.get_pos())
+                if hovered and self.click and self.buttons[j][i]["is_button"]:
                     c = self.button_action(c, i, j)
         return c
 
@@ -296,7 +333,10 @@ class ControllerScreen:
     def draw_button(self, i, j, invert=False, color = None):
         text_color = (255, 255, 255)
         if self.buttons[j][i]["is_button"]:
-            hovered = self.button_rects[j][i].collidepoint(self.mouse_pos)
+            if self.button_focus is not None:
+                hovered = i == self.button_focus[0]
+            else:
+                hovered = self.button_rects[j][i].collidepoint(pg.mouse.get_pos())
             scale = self.hover_scale if hovered else 1.0
 
             if not invert or color:
@@ -319,6 +359,6 @@ class ControllerScreen:
 
 class MenuCore:
     def __init__(self, c):
-        self.titleScreen = TitleScreen(c.screen, c.gameState, c.win_x, c.win_y)
-        self.onlineModeGameScreen = OnlineModeGameScreen(c.screen, c.gameState, c.onlineState, c.win_x, c.win_y)
+        self.titleScreen = TitleScreen(c)
+        self.onlineModeGameScreen = OnlineModeGameScreen(c)
         self.controllerScreen = ControllerScreen(c)

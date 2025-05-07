@@ -130,8 +130,8 @@ class LocalPlayer(Driver):
             self.camera.z = cam_pos[2]
 
 
-    def control(self, events):
-        inputs = self.controller.get_input(events)
+    def control(self):
+        inputs = self.controller.get_input()
         if inputs["debug_mode"]:
             self.gameDebugState = GameDebugState((self.gameDebugState.value + 1) % 3)
             self.disable_inputs()
