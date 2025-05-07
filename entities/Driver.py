@@ -25,7 +25,7 @@ class Driver:
         self.drift_angle = 0
         self.drift_boost = 0.5
         self.drift_direction = 0
-        self.drift_turn_speed_mult = 2
+        self.drift_turn_speed_mult = 1.5
         self.drift_speed_mult = 0.6
 
         self.mapmaster = mapmaster
@@ -95,7 +95,7 @@ class Driver:
     def control(self, events):
         return self.inputs
     
-    def get_speed(self, x, s = 0.8, r=0.3, a=0.0055):
+    def get_speed(self, x, s = 0.8, r=0.3, a=0.007):
         # s = self.top_speed
         # r = self.reverse_top_speeed
         # a = self.acceleration_stat
@@ -108,7 +108,7 @@ class Driver:
         # x = self.get_speed(x) - self.get_speed(self.max_momentum)
         mult = 30
         x = abs(self.get_speed(x, s=s, r=r, a=a))/s*mult
-        return (self.get_speed(x, s*mult*2, r=30, a=0.1) - s*x)/mult/2
+        return (self.get_speed(x, s*mult*2, r=30, a=0.2) - s*x)/mult/2
     
 
     def get_homo_pos(self):
@@ -131,10 +131,11 @@ class Driver:
             if self.inputs["gas"]:
                 if self.speed < 0:
                     # Gives more responsive gas after going reverse
-                    self.speed *= 0.9
-                self.speed += self.gas_force * dt * np.clip((100+self.speed)/self.speed, 1, 10)
+                    self.speed *= 0.8
+                    self.other_forces += self.direction_unitvec * dt / 200
+                self.speed += (self.gas_force + np.clip(1000/abs(self.speed), 1, 30)) * dt * (1-self.inputs["drift"]/1.5)
             if self.inputs["reverse"]:
-                self.speed -= self.gas_force * dt * np.clip((50+self.speed)/self.speed, 1, 10)
+                self.speed -= (self.gas_force + np.clip(1000/abs(self.speed), 1, 30)) * dt
 
 
             # DRIFTING / TURNING
@@ -165,8 +166,8 @@ class Driver:
             if slope_dir == 0:
                 self.slope_speed = 0
             else:
-                self.slope_speed = (5*slope_dir)**2 * np.abs(slope_dir) / slope_dir
-            self.speed += self.slope_speed # How slope effects speed
+                self.slope_speed = (5*slope_dir)**2 * np.sign(slope_dir) * dt * 2
+            self.speed += self.slope_speed# How slope effects speed
             slippy_constant = 0.05 # Increasing this ground more "slippery"
             self.other_forces += slippy_constant*self.get_speed(self.speed)**2*(no_y_normal_vector - np.dot(no_y_normal_vector, self.direction_unitvec) * self.direction_unitvec)
 
@@ -184,9 +185,7 @@ class Driver:
                 self.speed *= 0.99
             if self.inputs["brake"]:
                 self.speed *= 0.95
-                # Full Stop
-                if np.abs(self.speed) < 0.1:
-                    self.speed = 0
+
         else:
             # IN AIR
             # DRIFTING / TURNING
@@ -252,7 +251,9 @@ class Driver:
 
     def reset_drift(self, boost = False):
         if boost:
-            self.other_forces += self.direction_unitvec * self.drift_boost * np.clip(self.drift_time * self.drift_angle/5, 0, 1)
+            self.drift_multiplier = np.clip(self.drift_time/100 + self.drift_angle, 0, 3)
+            if self.drift_multiplier > 1:
+                self.other_forces += self.direction_unitvec * self.drift_boost * self.drift_multiplier
         self.drift_time = 0
         self.drift_angle = 0
         self.drift_direction = 0
