@@ -131,6 +131,7 @@ class DriverSprite(Renderable):
                 division = (division - 1) % 8
 
         self.carImg = pg.image.load(f'assets/car{driver_object.car_sprite}_{division}.png')
+        self.map_icon = self.carImg
 
     def draw(self, screen):
 
@@ -158,6 +159,7 @@ class FlagSprite(Renderable):
         self.flagImg = pg.image.load('assets/flag_green.png') if isCurrent else pg.image.load('assets/flag_red.png')
         if isLast:
             self.flagImg = pg.image.load('assets/sprite_finish.png')
+        self.map_icon = self.flagImg
 
     def draw(self, screen):
         if np.linalg.norm(self.screen_coords[0]) > 1:
@@ -182,6 +184,8 @@ class TreeSprite(Renderable):
             self.treeImg = pg.image.load('assets/pine-tree-isaiah658.png')
         else:
             self.treeImg = pg.image.load('assets/arvore.png')
+
+        self.map_icon = self.treeImg
 
     def draw(self, screen):
         if np.linalg.norm(self.screen_coords[0]) > 1:

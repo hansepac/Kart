@@ -70,13 +70,9 @@ class LocalPlayer(Driver):
         if not self.is_controller:
             show_keyboard_ui(self.screen, (window_x-350, window_y-350))
         
-        # this stuff is termporary for minimap
-        displacement_unit_vec = np.array([self.mapmaster.flags[self.flag_index][0], self.mapmaster.flags[self.flag_index][2]]) - np.array([self.pos[0], self.pos[2]])
-        phi1 = np.atan2(self.direction_unitvec[2], self.direction_unitvec[0])
-        phi2 = np.atan2(displacement_unit_vec[1], displacement_unit_vec[0])
-        angle_between = (phi2 - phi1 ) % (2*np.pi)
         
-        draw_minimap(self.screen, angle_between, (radius+30,3*radius+60), radius=80)
+        # UI stuff
+        draw_minimap(self.screen, self.pos, self.direction_unitvec, nontriangle_renderables, (30,2*radius+60), radius=100)
         draw_boost_bar(self.screen, self.drift_multiplier, self.drift_multiplier_max, self.drift_boost_threshold)
 
         font = pg.font.Font(None, 30)
