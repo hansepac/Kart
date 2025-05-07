@@ -13,7 +13,7 @@ class MapMaster:
         self.local_players = []
         self.player_screen_dimensions = []
         self.items = []
-        self.terrainDynamicCoordinator = self.terrainDynamicCoordinator=TerrainDynamicCoordinator(grid_spacing=0.1)
+        self.terrainDynamicCoordinator = self.terrainDynamicCoordinator=TerrainDynamicCoordinator(radius=20)
         self.screen = screen
         self.is_server = is_server
         if is_server:

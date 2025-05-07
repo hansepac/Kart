@@ -118,7 +118,7 @@ class Driver:
     
 
     def get_homo_pos(self):
-        return np.array([*self.pos, 1]) + np.array([0, 0.01, 0, 0]) # make it slightly above the ground. 
+        return np.array([*self.pos, 1]) + np.array([0, 0.015, 0, 0]) # make it slightly above the ground. 
 
     def updatePosition(self, dt_in):
         dt = 30*dt_in
@@ -177,8 +177,8 @@ class Driver:
                 self.speed += self.slope_speed/2 # How slope effects speed
             else:
                 self.speed += self.slope_speed
-            slippy_constant = 0.05 # Increasing this ground more "slippery"
-            self.other_forces += slippy_constant*self.get_speed(self.speed)**2*(no_y_normal_vector - np.dot(no_y_normal_vector, self.direction_unitvec) * self.direction_unitvec)
+            slippy_constant = 0.0005 # Increasing this ground more "slippery"
+            self.other_forces += slippy_constant*self.get_speed(self.speed)**2*(no_y_normal_vector - np.dot(no_y_normal_vector, self.direction_unitvec) * self.direction_unitvec)*dt*30
 
             # # IMPACT IMPULSE
             # if impact and self.impact_dt < 0:
@@ -224,7 +224,7 @@ class Driver:
 
         # If above ground, apply gravity
         if self.pos[1] > ground_height:
-            self.vel_y += -self.gravity * dt / 30 / 10
+            self.vel_y += -self.gravity * dt / 300
         else:
             # If below ground, apply floaty force
             floaty_constant = 1
@@ -241,7 +241,7 @@ class Driver:
         vel_final[1] = self.vel_y
         self.pos += vel_final / 30
         self.past_speeds[:-1] = self.past_speeds[1:] # shift old values
-        self.past_speeds[-1] = np.sqrt(vel_final[0]**2 + vel_final[2]**2)/dt/30
+        self.past_speeds[-1] = np.linalg.norm(vel_final)/30
         self.actual_speed = np.mean(self.past_speeds)
 
         # clip ground if below
