@@ -98,7 +98,7 @@ class Driver:
     def control(self, events):
         return self.inputs
     
-    def get_speed(self, x, s = 0.8, r=0.3, a=0.007):
+    def get_speed(self, x, s = 1, r=0.3, a=0.008):
         # s = self.top_speed
         # r = self.reverse_top_speeed
         # a = self.acceleration_stat
@@ -170,18 +170,21 @@ class Driver:
                 self.slope_speed = 0
             else:
                 self.slope_speed = (5*slope_dir)**2 * np.sign(slope_dir) * dt * 2
-            self.speed += self.slope_speed# How slope effects speed
+            if self.slope_speed < 0:
+                self.speed += self.slope_speed/2 # How slope effects speed
+            else:
+                self.speed += self.slope_speed
             slippy_constant = 0.05 # Increasing this ground more "slippery"
             self.other_forces += slippy_constant*self.get_speed(self.speed)**2*(no_y_normal_vector - np.dot(no_y_normal_vector, self.direction_unitvec) * self.direction_unitvec)
 
-            # IMPACT IMPULSE
-            if impact and self.impact_dt < 0:
-                self.impact_dt = 1
-                if self.vel_y < 0:
-                    impact_effect = max(abs(self.vel_y)**0.5, 0.25)
-                    self.other_forces += no_y_normal_vector*impact_effect
-            else:
-                self.impact_dt -= dt
+            # # IMPACT IMPULSE
+            # if impact and self.impact_dt < 0:
+            #     self.impact_dt = 1
+            #     if self.vel_y < 0:
+            #         impact_effect = max(abs(self.vel_y)**0.5, 0.25)
+            #         self.other_forces += no_y_normal_vector*impact_effect
+            # else:
+            #     self.impact_dt -= dt
             
             # Friction and Brake
             if not self.inputs["gas"] and not self.inputs["reverse"]:
@@ -254,7 +257,7 @@ class Driver:
 
     def reset_drift(self, boost = False):
         if boost:
-            self.drift_multiplier = np.clip(self.drift_time/100 + self.drift_angle, 0, 3)
+            self.drift_multiplier = np.clip(self.drift_time/100 + self.drift_angle, 0, 2)
             if self.drift_multiplier > 1:
                 self.other_forces += self.direction_unitvec * self.drift_boost * self.drift_multiplier
         self.drift_time = 0
