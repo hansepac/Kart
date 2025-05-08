@@ -3,14 +3,13 @@ from .Driver import Driver
 from .Camera import Camera
 from input import Controller
 from utils.states import GameDebugState
-from ui import draw_debug_text, draw_speedometer, show_keyboard_ui, draw_minimap
+from ui import draw_debug_text, draw_speedometer, show_keyboard_ui, draw_minimap, draw_boost_bar
 from entities.Renderable import *
 
 class LocalPlayer(Driver):
     # it already has position and velocity stuff
-
-    def __init__(self, mapmaster, player_screen, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), controller: Controller = Controller()):
-        super().__init__(mapmaster, pos = pos, direction_unitvec = direction_unitvec)
+    def __init__(self, mapmaster, player_screen, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), controller: Controller = Controller(), car_sprite = 0):
+        super().__init__(mapmaster, pos = pos, direction_unitvec = direction_unitvec, car_sprite=car_sprite)
         self.controller: Controller = controller
         self.camera = Camera(*pos, np.atan2(direction_unitvec[2], direction_unitvec[0]), nx = player_screen.get_size()[0], ny = player_screen.get_size()[1])
         self.camera_height = 0.2
@@ -19,6 +18,7 @@ class LocalPlayer(Driver):
         self.gameDebugState: GameDebugState = GameDebugState(0)
 
         self.screen = player_screen
+        self.name = "Local Player"
 
     def render_player_view(self, clock):
 
@@ -26,7 +26,6 @@ class LocalPlayer(Driver):
         sky_color = (0, round(angle*200), round(angle*255))
         self.screen.fill(sky_color)
 
-        # iterate through players is iterating through cameras. 
         self.camera.updateCamMat() # update camera matrices once per frame
 
         # make renderables
@@ -46,30 +45,48 @@ class LocalPlayer(Driver):
             
         # add flag renderable
         for i in range(self.mapmaster.num_flags):
-            nontriangle_renderables.append(FlagSprite(self.mapmaster.flags[i], self.camera, isCurrent=(self.flag_index == i)))
+            nontriangle_renderables.append(FlagSprite(self.mapmaster.flags[i], self.camera, isCurrent=(self.flag_index == i), isLast=(i == self.mapmaster.num_flags - 1)))
+
+        # add trees 
+        trees, biome_indices = self.terrainDynamic.get_trees()
+        for i in range(len(trees)):
+            nontriangle_renderables.append(TreeSprite(trees[i], biome_indices[i]))
 
         # sort renderables according to depth
         all_renderables = calculateRenderableScreenCoords(self.camera, nontriangle_renderables, triangle_renderables)
-        player_renderable.screen_depth = 0.0 # move player to top of the stack
         all_renderables.sort(key=lambda r: r.screen_depth, reverse=True)
 
         # now draw renderables
         for renderable in all_renderables:
-            renderable.draw(self.screen)
+            if renderable is not player_renderable:
+                renderable.draw(self.screen)
+        player_renderable.draw(self.screen) # draw this player last
 
         window_x, window_y = self.screen.get_size()
         radius = 100
-        draw_speedometer(self.screen, abs(self.speed/10), (radius+30,radius+30), radius=radius, max_val=self.max_momentum/10, tick_step=10)
+        draw_speedometer(self.screen, self.actual_speed*1250, (radius+70, radius+70), radius=radius, max_val=100, tick_step=10)
+        
         if not self.controller.is_controller:
+
             show_keyboard_ui(self.screen, (window_x-350, window_y-350))
         
-        # this stuff is termporary for minimap
-        displacement_unit_vec = np.array([self.mapmaster.flags[self.flag_index][0], self.mapmaster.flags[self.flag_index][2]]) - np.array([self.pos[0], self.pos[2]])
-        phi1 = np.atan2(self.direction_unitvec[2], self.direction_unitvec[0])
-        phi2 = np.atan2(displacement_unit_vec[1], displacement_unit_vec[0])
-        angle_between = (phi2 - phi1 ) % (2*np.pi)
         
-        draw_minimap(self.screen, angle_between, (radius+30,3*radius+60), radius=80)
+        # UI stuff
+        draw_minimap(self.screen, self.pos, self.direction_unitvec, nontriangle_renderables, (30,2*radius+60), radius=100)
+        draw_boost_bar(self.screen, self.drift_multiplier, self.drift_multiplier_max, self.drift_boost_threshold, x=20, y = 80)
+
+        # Stylish racing HUD text
+        font = pg.font.Font("assets/fonts/SpeedRush.ttf", 40) if pg.font.get_init() else pg.font.Font(None, 40)
+        text = f"Rank: {self.rank}  Flag: {self.flag_index if not self.completed else self.mapmaster.num_flags}/{self.mapmaster.num_flags}"
+        pulse = int(128 + 127 * math.sin(pg.time.get_ticks() * 0.003))
+        color = (255, pulse, 0)
+        shadow = font.render(text, True, (0, 0, 0))
+        main = font.render(text, True, color)
+        box = pg.Surface(main.get_size(), pg.SRCALPHA); box.fill((0, 0, 0, 150))
+        self.screen.blit(box, (10, 10))
+        self.screen.blit(shadow, (12, 12))
+        self.screen.blit(main, (10, 10))
+
         
         # draw debug text
         if self.gameDebugState != self.gameDebugState.NORMAL:
@@ -83,8 +100,7 @@ class LocalPlayer(Driver):
                 f"x: {round(self.speed)}",
                 f"f(x): {round(self.get_speed(self.speed), 2)}",
                 f"slope_force: {round(self.slope_speed, 2)}",
-                f"y_velocity: {round(self.vel_y, 2)}",
-                f"Flag screen depth: {FlagSprite(self.mapmaster.flags[self.flag_index], self.camera).screen_depth}"
+                f"y_velocity: {round(self.vel_y, 2)}"
             ]
             draw_debug_text(self.screen, debug_text, (255, 255, 255))
 
@@ -114,19 +130,6 @@ class LocalPlayer(Driver):
             cam_pos = self.pos - self.camera_distance*horizontal_unitvec + np.array([0, 1, 0])*self.camera_height
             self.camera.x = cam_pos[0]
             self.camera.y = (1-camera_theta_move_rate)*self.camera.y + camera_theta_move_rate*(ground_height + self.camera_height)
-            self.camera.z = cam_pos[2]
-
-    def updateCameraPositonOld(self):
-        if self.gameDebugState != self.gameDebugState.FLY_DEBUG:
-            #               TODO: Adjust camera position factoring in the theta angle of ground
-            self.camera.theta = -np.atan2(self.camera_height, self.camera_distance)
-            self.camera.phi = np.atan2(self.direction_unitvec[2], self.direction_unitvec[0]) + np.pi/2
-            
-            horizontal_unitvec = self.direction_unitvec/np.linalg.norm(self.direction_unitvec)
-            horizontal_unitvec[1] = 0
-            cam_pos = self.pos - self.camera_distance*horizontal_unitvec + np.array([0, 1, 0])*self.camera_height
-            self.camera.x = cam_pos[0]
-            self.camera.y = cam_pos[1]
             self.camera.z = cam_pos[2]
 
 

@@ -72,7 +72,7 @@ class Client:
         try:
             self.client_socket.send(message.encode('utf-8'))
         except (ConnectionRefusedError, BrokenPipeError, OSError) as e:
-            print(f"Send failed: {e}, attempting to reconnect...")
+            # print(f"Send failed: {e}, attempting to reconnect...")
             self.connect_to_server()
             return None
 

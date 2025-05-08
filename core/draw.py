@@ -7,4 +7,4 @@ def draw(c: Core, mc: MenuCore):
     if c.gameState != c.gameState.IN_GAME:
         title.draw(c, mc)
     elif c.gameState == c.gameState.IN_GAME:
-        game.draw(c.clock)
+        game.draw(c)

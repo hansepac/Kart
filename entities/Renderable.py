@@ -67,7 +67,7 @@ def render_triangle(triangle_renderable, camera):
     triangle_renderable.triangle_rendering = True
     triangle_renderable.screen_coords = camera.drawTriangle(triangle_renderable.homo_coords)
     if len(triangle_renderable.screen_coords) > 1:
-        triangle_renderable.screen_depth = np.average(np.array(triangle_renderable.screen_coords)[:, 2])
+        triangle_renderable.screen_depth = np.max(np.array(triangle_renderable.screen_coords)[:, 2])
     elif len(triangle_renderable.screen_coords) == 1:
         triangle_renderable.screen_depth = triangle_renderable.screen_coords[0][2]
     else:
@@ -92,7 +92,7 @@ class TerrainTriangle(Renderable):
 
     def draw(self, screen):
         # draw the object and calculate 
-        render_color = smooth_color_transition(self.colour, self.skycolour, self.screen_depth, transition_point=0.9, steepness=20)
+        render_color = smooth_color_transition(self.colour, self.skycolour, self.screen_depth, transition_point=0.98, steepness=40)
         
         if self.triangle_rendering:
             if len(self.screen_coords) > 2:
@@ -119,22 +119,36 @@ class DriverSprite(Renderable):
         shadow_loc[1] = self.driver_object.terrainDynamic.get_ground_height(self.driver_object.pos)
         self.homo_coords.append(shadow_loc)
 
-        self.carImg = pg.image.load('assets/car1_basic.png')
+        # choose image
+        driver_angle = np.atan2(driver_object.direction_unitvec[2], driver_object.direction_unitvec[0]) + np.pi/2
+        relative_angle = (driver_angle - camera.phi) % (2*np.pi)
+        division = round(relative_angle / (np.pi/4)) % 8
+
+        # turn more if in first person 
+        if driver_object.drift_direction > 0.5:
+            division = (division + 1) % 8
+        elif driver_object.drift_direction < -0.5:
+                division = (division - 1) % 8
+
+        self.carImg = pg.image.load(f'assets/car{driver_object.car_sprite}_{division}.png')
+        self.map_icon = self.carImg
 
     def draw(self, screen):
 
         if np.linalg.norm(self.screen_coords[1]) > 0:
-                shadow_rect = pg.Rect(0,0,80,40)
+                scale_factor = 0.25*(1 - self.screen_coords[1][2])**(-1)
+                shadow_rect = pg.Rect(0,0,80/scale_factor,40/scale_factor)
                 shadow_rect.center = (self.screen_coords[1][0], self.screen_coords[1][1])
                 pg.draw.ellipse(screen, (50, 50, 50), shadow_rect)
 
         if np.linalg.norm(self.screen_coords[0]) > 1:
-            scaled_img = pg.transform.scale(self.carImg, (self.carImg.get_width() // 3, self.carImg.get_height() // 3))
-            img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1]))
+            scale_factor = 0.7*(1 - self.screen_coords[0][2])**(-1)
+            scaled_img = pg.transform.scale(self.carImg, (self.carImg.get_width() /scale_factor, self.carImg.get_height() /scale_factor))
+            img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1] - 0.1*scaled_img.get_height()))
             screen.blit(scaled_img, img_rect)
 
 class FlagSprite(Renderable):
-    def __init__(self, flag_pos, camera, isCurrent = False):
+    def __init__(self, flag_pos, camera, isCurrent = False, isLast = False):
         super().__init__()
         self.homo_coords = [np.array([*flag_pos, 1])]
         
@@ -143,6 +157,9 @@ class FlagSprite(Renderable):
         self.screen_depth = 0
 
         self.flagImg = pg.image.load('assets/flag_green.png') if isCurrent else pg.image.load('assets/flag_red.png')
+        if isLast:
+            self.flagImg = pg.image.load('assets/sprite_finish.png')
+        self.map_icon = self.flagImg
 
     def draw(self, screen):
         if np.linalg.norm(self.screen_coords[0]) > 1:
@@ -150,6 +167,34 @@ class FlagSprite(Renderable):
             scaled_img = pg.transform.scale(self.flagImg, (self.flagImg.get_width() / scale_factor, self.flagImg.get_height() / scale_factor))
             img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1] - int(scaled_img.get_height()*0.6)))
             screen.blit(scaled_img, img_rect)
+
+class TreeSprite(Renderable):
+    def __init__(self, tree_homo_pos, biome_idx):
+        super().__init__()
+        self.homo_coords = [tree_homo_pos]
+
+        self.screen_coords = None
+        self.screen_depth = 0
+
+        if biome_idx == 0:
+            self.treeImg = pg.image.load('assets/rocks.png')
+        elif biome_idx == 1:
+            self.treeImg = pg.image.load('assets/Catus.png')
+        elif biome_idx == 2:
+            self.treeImg = pg.image.load('assets/pine-tree-isaiah658.png')
+        else:
+            self.treeImg = pg.image.load('assets/arvore.png')
+
+        self.map_icon = self.treeImg
+
+    def draw(self, screen):
+        if np.linalg.norm(self.screen_coords[0]) > 1:
+            scale_factor = 0.05*(1 - self.screen_depth)**(-1)
+            scaled_img = pg.transform.scale(self.treeImg, (self.treeImg.get_width() / scale_factor, self.treeImg.get_height() / scale_factor))
+            img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1] - int(scaled_img.get_height()*0.5)))
+            screen.blit(scaled_img, img_rect)
+
+
 
 import math
 

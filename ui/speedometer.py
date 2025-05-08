@@ -10,7 +10,7 @@ def angle_for_value(value, min_val, max_val):
     ratio = (value - min_val) / (max_val - min_val)
     return radians(135 - 270 * ratio)
 
-def draw_speedometer(screen, value, center:tuple, radius = 150, min_val = 0, max_val = 800, tick_step = 20):
+def draw_speedometer(screen, value, center:tuple, radius = 150, min_val = 0, max_val = 800, tick_step = 20, name="Speed"):
     # Draw outer circle
     pg.draw.arc(screen, (200, 200, 200), 
                     (center[0] - radius, center[1] - radius, radius*2, radius*2), 
@@ -41,5 +41,6 @@ def draw_speedometer(screen, value, center:tuple, radius = 150, min_val = 0, max
     pg.draw.circle(screen, (255, 255, 255), center, 5)
 
     # Value text
-    val_text = font.render(f"Speed: {round(value)}", True, (255, 255, 255))
-    screen.blit(val_text, (center[0] - val_text.get_width()//2, center[1] - 50))
+    if name != "":
+        val_text = font.render(f"{name}: {round(value)}", True, (255, 255, 255))
+        screen.blit(val_text, (center[0] - val_text.get_width()//2, center[1] - 50))

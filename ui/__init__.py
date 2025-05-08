@@ -4,3 +4,4 @@ from .speedometer import draw_speedometer
 from .MenuScreen import TitleScreen, OnlineModeGameScreen, MenuCore
 from .keyboard import show_keyboard_ui
 from .minimap import draw_minimap
+from .boost_bar import draw_boost_bar
