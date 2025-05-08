@@ -28,7 +28,8 @@ class TerrainDynamicCoordinator:
             "detail_density": self.detail_density,
             "noise_height_large": self.noise_height_large,
             "detail_height": self.detail_height,
-            "grid_spacing": self.grid_spacing
+            "grid_spacing": self.grid_spacing,
+            "tree_seed": self.tree_seed
         }
     
     def overwrite_seed(self, seed_json):
@@ -40,6 +41,7 @@ class TerrainDynamicCoordinator:
         self.noise_height_large = seed_json["noise_height_large"]
         self.detail_height = seed_json["detail_height"]
         self.grid_spacing = seed_json["grid_spacing"]
+        self.tree_seed = seed_json["tree_seed"]
 
     def get_rough_height(self, pos_3d):
         '''Returns the height of the perlin function. It might not line up exactly with the ground because the 
