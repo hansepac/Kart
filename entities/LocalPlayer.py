@@ -60,7 +60,7 @@ class LocalPlayer(Driver):
         for renderable in all_renderables:
             if renderable is not player_renderable:
                 renderable.draw(self.screen)
-        player_renderable.draw(self.screen) # draw this player last
+        player_renderable.draw(self.screen, is_player=True) # draw this player last
 
         window_x, window_y = self.screen.get_size()
         radius = 100

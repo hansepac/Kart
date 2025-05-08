@@ -133,7 +133,7 @@ class DriverSprite(Renderable):
         self.carImg = pg.image.load(f'assets/car{driver_object.car_sprite}_{division}.png')
         self.map_icon = self.carImg
 
-    def draw(self, screen):
+    def draw(self, screen, is_player = False):
 
         if np.linalg.norm(self.screen_coords[1]) > 0:
                 scale_factor = 0.25*(1 - self.screen_coords[1][2])**(-1)
@@ -146,6 +146,11 @@ class DriverSprite(Renderable):
             scaled_img = pg.transform.scale(self.carImg, (self.carImg.get_width() /scale_factor, self.carImg.get_height() /scale_factor))
             img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1] - 0.1*scaled_img.get_height()))
             screen.blit(scaled_img, img_rect)
+
+            if not is_player:
+                font = pg.font.SysFont(None, 24)  # Create once, outside draw()
+                draw_text_centered(screen, self.driver_object.name, (self.screen_coords[0][0], self.screen_coords[0][1] - 100), font)
+
 
 class FlagSprite(Renderable):
     def __init__(self, flag_pos, camera, isCurrent = False, isLast = False):
@@ -194,7 +199,10 @@ class TreeSprite(Renderable):
             img_rect = scaled_img.get_rect(center=(self.screen_coords[0][0], self.screen_coords[0][1] - int(scaled_img.get_height()*0.5)))
             screen.blit(scaled_img, img_rect)
 
-
+def draw_text_centered(surface, text, center_pos, font, color=(255, 255, 255)):
+    text_surf = font.render(text, True, color)
+    text_rect = text_surf.get_rect(center=center_pos)
+    surface.blit(text_surf, text_rect)
 
 import math
 
