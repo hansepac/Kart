@@ -17,6 +17,7 @@ class MapMaster:
         self.terrainDynamicCoordinator = self.terrainDynamicCoordinator=TerrainDynamicCoordinator(radius=20)
         self.screen = screen
         self.is_server = is_server
+        self.map_loaded = False
         if is_server:
             self.setup_game()
 
@@ -36,6 +37,7 @@ class MapMaster:
             new_flag_pos = self.flags[-1] + r*np.array([np.cos(phi), 0, np.sin(phi)])
             new_flag_pos[1] = self.terrainDynamicCoordinator.get_rough_height(new_flag_pos) # put it on the ground 
             self.flags.append(new_flag_pos)
+        self.map_loaded = True
 
     def get_game_setup_json(self):
         # returns a json object with game information
@@ -46,7 +48,7 @@ class MapMaster:
     
     def get_game_data(self):
         return {
-            "drivers": [driver.get_data() for driver in self.drivers]
+            "drivers": [driver.get_data() for driver in self.drivers if not driver.is_alien],
         }
     
     def overwrite_game_setup(self, game_info_json):
@@ -57,25 +59,29 @@ class MapMaster:
     def update_from_server(self, server_game_data_chunks):
         # Update driver positions from server
         for server_game_data in server_game_data_chunks:
-            for key, value in server_game_data.items():
-                if key == "live_data":
-                    for key2, value2 in value.items():
-                        if key2 == "drivers":
-                            for driver_data in value2:
-                                new_driver = True
-                                for driver in self.drivers:
-                                    if driver.id == driver_data["id"]:
-                                        driver.update_from_server(driver_data)
-                                        new_driver = False
-                                        break
-                                if new_driver:
-                                    new_driver = Driver(self, pos=driver_data["pos"], direction_unitvec=driver_data["direction_unitvec"], id=driver_data["id"])
-                                    new_driver.update_from_server(driver_data)
-                                    self.drivers.append(new_driver)
+            dat = server_game_data["dat"]
+            if server_game_data["msg_type"] == "live_data":
+                for key, value in dat.items():
+                    if key == "drivers":
+                        for driver_data in value:
+                            new_driver = True
+                            for driver in self.drivers:
+                                if driver.id == driver_data["id"] and driver.is_alien:
+                                    driver.update_from_server(driver_data)
+                                    new_driver = False
+                                    break
+                                elif driver.id == driver_data["id"]:
+                                    new_driver = False
+                                    break
+                            if new_driver:
+                                new_driver = Driver(self, pos=driver_data["pos"], direction_unitvec=driver_data["direction_unitvec"], id=driver_data["id"], is_alien=True)
+                                new_driver.update_from_server(driver_data)
+                                self.drivers.append(new_driver)
 
-                elif key == "game_setup":
-                    self.overwrite_game_setup(value["game_setup"])
-                    self.terrainDynamicCoordinator.overwrite_seed(value["seed"])
+            elif server_game_data["msg_type"] == "game_setup":
+                print("OVERWRITING GAME SETUP")
+                self.overwrite_game_setup(dat["game_setup"])
+                self.terrainDynamicCoordinator.overwrite_seed(dat["seed"])
 
     def update(self, c):
         # Update local player / driver positions
@@ -85,7 +91,7 @@ class MapMaster:
                 continue
             else:
                 driver.terrainDynamic.update_grid(driver.pos)
-                driver.control(c.events)
+                driver.control()
                 driver.updatePosition(c.dt)
                 driver_dat.append(driver.get_data())
 
@@ -171,14 +177,14 @@ class MapMaster:
         # creates a terrain dynamic. The driver class uses this. 
         return TerrainDynamic(coordinator=self.terrainDynamicCoordinator, center=pos)
     
-    def addLocalPlayer(self, pos=np.array([0.0, 0.0, 0.0]), direction_unitvec=np.array([1.0, 0.0, 0.0]), is_controller=False, car_sprite = 0):
+    def addLocalPlayer(self, controller, pos=np.array([0.0, 0.0, 0.0]), direction_unitvec=np.array([1.0, 0.0, 0.0]), car_sprite = 0):
         # calculate screen tile sizes
         x_size, y_size = self.screen.get_size()
         x_size = x_size // 2 if len(self.local_players) + 1 > 1 else x_size
         y_size = y_size // 2 if len(self.local_players) + 1 > 2 else y_size
 
         # Create LocalPlayer
-        new_local_player = LocalPlayer(self, pg.Surface((x_size, y_size)), pos=pos, direction_unitvec=direction_unitvec, is_controller=is_controller, car_sprite=car_sprite)
+        new_local_player = LocalPlayer(self, pg.Surface((x_size, y_size)), pos=pos, direction_unitvec=direction_unitvec, controller=controller, car_sprite=car_sprite)
         
         # create new screens for other local players
         for player in self.local_players:

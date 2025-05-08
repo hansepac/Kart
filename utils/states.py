@@ -5,7 +5,7 @@ class GameState(Enum):
     JOIN = 1
     CHAR_SELECT = 2
     IN_GAME = 3
-    SETTINGS = 4
+    CONTROLS = 4
 
 class GameDebugState(Enum):
     NORMAL = 0

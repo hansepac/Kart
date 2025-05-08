@@ -1,5 +1,6 @@
 from random import randint
 from numpy import array
+import pygame as pg
 
 class Dots():
     def __init__(self, x: int, y: int, z: int):

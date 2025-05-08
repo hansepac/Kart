@@ -1,8 +1,9 @@
-from utils.cores import Core
-from ui import MenuCore
+# from ui import MenuCore
 
-def draw(c: Core, mc: MenuCore):
+def draw(c, mc):
     if c.gameState == c.gameState.TITLE:
         mc.titleScreen.draw()
     elif c.gameState == c.gameState.JOIN:
-        mc.joinGameScreen.draw()
+        mc.onlineModeGameScreen.draw()
+    elif c.gameState == c.gameState.CONTROLS:
+        mc.controllerScreen.draw()

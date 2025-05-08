@@ -8,11 +8,9 @@ from entities.Renderable import *
 
 class LocalPlayer(Driver):
     # it already has position and velocity stuff
-
-    def __init__(self, mapmaster, player_screen, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), is_controller = False, car_sprite = 0):
+    def __init__(self, mapmaster, player_screen, pos = np.array([0.0, 0.0, 0.0]), direction_unitvec = np.array([1.0, 0.0, 0.0]), controller: Controller = Controller(), car_sprite = 0):
         super().__init__(mapmaster, pos = pos, direction_unitvec = direction_unitvec, car_sprite=car_sprite)
-        self.is_controller = is_controller
-        self.controller: Controller = Controller(is_controller)
+        self.controller: Controller = controller
         self.camera = Camera(*pos, np.atan2(direction_unitvec[2], direction_unitvec[0]), nx = player_screen.get_size()[0], ny = player_screen.get_size()[1])
         self.camera_height = 0.2
         self.camera_distance = 0.3
@@ -68,7 +66,8 @@ class LocalPlayer(Driver):
         radius = 100
         draw_speedometer(self.screen, self.actual_speed*1250, (radius+70, radius+70), radius=radius, max_val=100, tick_step=10)
         
-        if not self.is_controller:
+        if not self.controller.is_controller:
+
             show_keyboard_ui(self.screen, (window_x-350, window_y-350))
         
         
@@ -134,8 +133,8 @@ class LocalPlayer(Driver):
             self.camera.z = cam_pos[2]
 
 
-    def control(self, events):
-        inputs = self.controller.get_input(events)
+    def control(self):
+        inputs = self.controller.get_input()
         if inputs["debug_mode"]:
             self.gameDebugState = GameDebugState((self.gameDebugState.value + 1) % 3)
             self.disable_inputs()

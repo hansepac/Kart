@@ -30,6 +30,11 @@ if __name__ == "__main__":
     # Init game clock
     c.clock = pg.time.Clock()
 
+    # Game Controller
+    from input import Controller
+    c.controllers = []
+    c.controllers.append(Controller(is_controller=True))
+
     # Game States
     c.gameState = GameState(0) # {0: TITLE, 1: CHAR_SELEC, 2: IN_GAME, 3: SETTINGS}
     c.onlineState = OnlineState(0) # {0: LOCAL, 1: CLIENT, 2: HOST}
@@ -37,7 +42,9 @@ if __name__ == "__main__":
     # Menu Screens
     from ui import MenuCore
     win_x, win_y = c.screen.get_size()
-    mc = MenuCore(c.screen, c.gameState, c.onlineState, win_x, win_y)
+    c.win_x = win_x
+    c.win_y = win_y
+    mc = MenuCore(c)
 
     # sound master
     from ui.SoundMaster import SoundMaster
