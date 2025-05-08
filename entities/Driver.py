@@ -90,18 +90,26 @@ class Driver:
     def get_data(self):
         return {
             "id": self.id,
+            "name": self.name,
             "pos": self.pos.tolist(),
             "flag_index": self.flag_index,
+            "rank": self.rank,
             "direction_unitvec": self.direction_unitvec.tolist(),
             "is_on_ground": bool(self.is_on_ground),
+            "car_sprite": self.car_sprite,
+            "completed": bool(self.completed)
         }
     
     def update_from_server(self, data_json):
         # update the driver from the server
+        self.name = data_json["name"]
         self.pos = np.array(data_json["pos"])
         self.flag_index = data_json["flag_index"]
+        self.rank = data_json["rank"]
         self.direction_unitvec = np.array(data_json["direction_unitvec"])
         self.is_on_ground = data_json["is_on_ground"]
+        self.car_sprite = data_json["car_sprite"]
+        self.completed = data_json["completed"]
 
     def control(self):
         return self.inputs
