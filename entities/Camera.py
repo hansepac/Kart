@@ -1,7 +1,7 @@
 from numpy import array, sin, cos, tan, pi
 import numpy as np
 import pygame as pg
-
+np.seterr(over='ignore')
 
 
 class Camera:
