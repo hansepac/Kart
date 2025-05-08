@@ -21,7 +21,7 @@ class TerrainDynamicCoordinator:
 
     def get_seed_json(self):
         return {
-            "colour_base": self.colour_base,
+            "colour_base": self.colour_base.tolist(),
             "height_base_large": self.height_base_large,
             "detail_base": self.detail_base,
             "noise_density_large": self.noise_density_large,
@@ -32,7 +32,7 @@ class TerrainDynamicCoordinator:
         }
     
     def overwrite_seed(self, seed_json):
-        self.colour_base = seed_json["colour_base"]
+        self.colour_base = np.array(seed_json["colour_base"])
         self.height_base_large = seed_json["height_base_large"]
         self.detail_base = seed_json["detail_base"]
         self.noise_density_large = seed_json["noise_density_large"]
