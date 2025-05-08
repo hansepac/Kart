@@ -96,8 +96,7 @@ class Driver:
             "rank": self.rank,
             "direction_unitvec": self.direction_unitvec.tolist(),
             "is_on_ground": bool(self.is_on_ground),
-            "car_sprite": self.car_sprite,
-            "completed": bool(self.completed)
+            "car_sprite": self.car_sprite
         }
     
     def update_from_server(self, data_json):
@@ -109,7 +108,6 @@ class Driver:
         self.direction_unitvec = np.array(data_json["direction_unitvec"])
         self.is_on_ground = data_json["is_on_ground"]
         self.car_sprite = data_json["car_sprite"]
-        self.completed = data_json["completed"]
 
     def control(self):
         return self.inputs
