@@ -19,7 +19,7 @@ class AIDriver(Driver):
         self.name = choice(adjectives) + " " + choice(nouns)
 
         
-    def control(self, events):
+    def control(self):
         ''' This function looks at the game state and figures out 
             what the player controls need to be for the ai. The AI plays the game 
             the same way the user does. It doesn't have access to modified physics. '''
