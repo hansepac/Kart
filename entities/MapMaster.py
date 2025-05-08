@@ -87,27 +87,27 @@ class MapMaster:
         # Update local player / driver positions
         driver_dat = []
         for driver in self.drivers:
-            if driver.is_alien:
-                continue
-            else:
+            if not driver.is_alien:
+                # FOR LOCAL DRIVERS
                 driver.terrainDynamic.update_grid(driver.pos)
                 driver.control()
                 driver.updatePosition(c.dt)
                 driver_dat.append(driver.get_data())
+            # FOR ALL DRIVERS
+            # check for flag indices
+            if np.linalg.norm(driver.pos - self.flags[driver.flag_index]) < 0.2:
+                if driver.flag_index >= self.num_flags - 1:
+                    if not driver.completed:
+                        driver.completed = True
+                        self.completed_drivers.append(driver)
 
-                # check for flag indices
-                if np.linalg.norm(driver.pos - self.flags[driver.flag_index]) < 0.2:
-                    if driver.flag_index >= self.num_flags - 1:
-                        if not driver.completed:
-                            driver.completed = True
-                            self.completed_drivers.append(driver)
+                        if len(self.completed_drivers) == len(self.drivers):
+                            c.gameState = GameState(0)
+                            pg.mouse.set_visible(True)
+                            c.soundmaster.clear_game_sounds()
+                else:
+                    driver.flag_index += 1
 
-                            if len(self.completed_drivers) == len(self.drivers):
-                                c.gameState = GameState(0)
-                                pg.mouse.set_visible(True)
-                                c.soundmaster.clear_game_sounds()
-                    else:
-                        driver.flag_index += 1
 
         for player in self.local_players:
             player.updateCameraPositon()
