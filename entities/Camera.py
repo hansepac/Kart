@@ -1,35 +1,34 @@
-from numpy import array, sin, cos, tan, pi
 import numpy as np
-import pygame as pg
-np.seterr(over='ignore')
+import cython
 
+# This is a compiled file. 
 
 class Camera:
-    def __init__(self, x = 0, y = 0, z = 0, theta = 0, phi=0, nx=400, ny=400):
+    def __init__(self, x: cython.double = 0, y: cython.double = 0, z: cython.double = 0, theta: cython.double = 0, phi: cython.double=0, nx: cython.int=400, ny: cython.int =400):
     
-        self.x = x
-        self.y = y
-        self.z = z
-        self.theta = theta
-        self.phi = phi
+        self.x: cython.double = x
+        self.y: cython.double = y
+        self.z: cython.double = z
+        self.theta: cython.double = theta
+        self.phi: cython.double = phi
 
         # camera canvas coordinates. 
-        self.nx = nx 
-        self.ny = ny
+        self.nx: cython.int = nx 
+        self.ny: cython.int = ny
 
 
         self.camMat = None
         self.updateCamMat()
         
         # now make the viewport matrix. 
-        self.vpMat = array([[self.nx/2, 0, 0, (self.nx-1)/2], 
+        self.vpMat = np.array([[self.nx/2, 0, 0, (self.nx-1)/2], 
                                 [0, self.ny/2, 0, (self.ny-1)/2], 
                                 [0, 0, 0.5, 0.5]])
 
     # helps make a perspective matrix
-    def perspective_matrix(self, fov, aspect_ratio, near, far):
-        f = 1 / tan(fov * pi/360)
-        return array([
+    def perspective_matrix(self, fov: cython.double, aspect_ratio: cython.double, near: cython.double, far: cython.double):
+        f: cython.double = 1 / np.tan(fov * np.pi/360)
+        return np.array([
             [f / aspect_ratio, 0, 0, 0],
             [0, f, 0, 0],
             [0, 0, (far + near) / (near - far), (2 * far * near) / (near - far)],
@@ -39,18 +38,18 @@ class Camera:
     # updates the camMat based on position and angle
     def updateCamMat(self):
         # make initial camera matrix 
-        translationMatrix = array([[1, 0, 0, -self.x],
+        translationMatrix = np.array([[1, 0, 0, -self.x],
                                    [0, -1, 0, self.y],
                                    [0, 0, 1, -self.z],
                                    [0, 0, 0, 1]])
         # the y axis gets flipped because y is up
-        phiMatrix = array([[cos(self.phi), 0, sin(self.phi), 0],
+        phiMatrix = np.array([[np.cos(self.phi), 0, np.sin(self.phi), 0],
                            [0, 1, 0, 0],
-                           [-sin(self.phi), 0, cos(self.phi), 0], 
+                           [-np.sin(self.phi), 0, np.cos(self.phi), 0], 
                            [0, 0, 0, 1]])
-        thetaMatrix = array([[1, 0, 0, 0],
-                             [0, cos(self.theta), -sin(self.theta), 0],
-                             [0, sin(self.theta), cos(self.theta), 0],
+        thetaMatrix = np.array([[1, 0, 0, 0],
+                             [0, np.cos(self.theta), -np.sin(self.theta), 0],
+                             [0, np.sin(self.theta), np.cos(self.theta), 0],
                              [0, 0, 0, 1]])
         
         perspectiveMatrix = self.perspective_matrix(70, self.nx/self.ny, 0.1, 1000 )
@@ -59,14 +58,14 @@ class Camera:
     # updates the vpMat based on screenSize (only run if screen size changes)
     def updateVpMat(self):
         '''Update the viewport matrix if the size of the camera window changed. '''
-        self.vpMat = array([[self.nx/2, 0, 0, (self.nx-1)/2], 
+        self.vpMat = np.array([[self.nx/2, 0, 0, (self.nx-1)/2], 
                                 [0, self.ny/2, 0, (self.ny-1)/2], 
                                 [0, 0, 0.5, 0.5]])
 
     # takes in homogeneous coords and returns screen coords 
     def getScreenCoords(self, inputCoordinates):
         # take in a list of input vectors and return the corresponding screen vectors 
-        step1 = array(inputCoordinates) @ self.camMat.T
+        step1 = np.array(inputCoordinates) @ self.camMat.T
 
         # check for culling
         mask = np.max(np.abs(step1[:, :3]), axis=1) > np.abs(step1[:, 3])
@@ -88,7 +87,7 @@ class Camera:
         ''' Renders a triangle (list of three 4d points) and returns the list of screen points. 
         The returned list may have more than 3 points based on clipping. '''
         # first transform each of the original points
-        step1 = array(triangle_homo_coords) @ self.camMat.T 
+        step1 = np.array(triangle_homo_coords) @ self.camMat.T 
 
         # check for culling
         mask = np.max(np.abs(step1[:, :3]), axis=1) > np.abs(step1[:, 3])
@@ -124,28 +123,26 @@ class Camera:
             return []
 
 
-    def control(self, inputs):
+    def control(self, inputs, mouse_dx: cython.double, mouse_dy: cython.double):
 
-        dx, dy = pg.mouse.get_rel()
-
-        sensitivity = 0.002
-        move_speed = 0.01
+        sensitivity: cython.double = 0.002
+        move_speed: cython.double = 0.01
 
         # Mouse movement adjusts viewing angles
-        self.phi   += dx * sensitivity   # yaw (left-right)
-        self.theta += -dy * sensitivity   # pitch (up-down)
+        self.phi   += mouse_dx * sensitivity   # yaw (left-right)
+        self.theta += -mouse_dy * sensitivity   # pitch (up-down)
 
         # Optional: clamp theta to avoid flipping
-        max_pitch = 1.5  # radians ~85 degrees
+        max_pitch: cython.double = 1.5  # radians ~85 degrees
         self.theta = max(-max_pitch, min(max_pitch, self.theta))
 
         # Direction vector based on yaw (phi)
-        dir_x = sin(self.phi)
-        dir_z = -cos(self.phi)
+        dir_x: cython.double = np.sin(self.phi)
+        dir_z: cython.double = -np.cos(self.phi)
 
         # Strafe vector (perpendicular)
-        strafe_x = cos(self.phi)
-        strafe_z = sin(self.phi)
+        strafe_x = np.cos(self.phi)
+        strafe_z = np.sin(self.phi)
 
         shift_multiplier = 3.5 if inputs["drift"] else 1
 

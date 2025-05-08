@@ -1,14 +1,16 @@
-from abc import ABC, abstractmethod
 import numpy as np
 import pygame as pg
+import cython
 
-class Renderable(ABC):
+# This is a compiled file
+
+
+class Renderable:
     def __init__(self):
-        self.screen_depth = 0
+        self.screen_depth: cython.double = 0
         self.homo_coords = []
         self.screen_coords = []
 
-    @abstractmethod
     def draw(self, screen):
         pass
 
@@ -35,7 +37,7 @@ def calculateRenderableScreenCoords(camera, nontriangle_renderables, triangle_re
     screen_coords = camera.getScreenCoords(homo_coords_list)
 
     # add buffer 
-    buffer = 0
+    buffer: cython.int = 0
     mask = np.all(screen_coords == 0, axis=1)
     screen_coords[:, 0] = screen_coords[:, 0]*(camera.nx + 2*buffer)/camera.nx - buffer
     screen_coords[:, 1] = screen_coords[:, 1]*(camera.ny + 2*buffer)/camera.ny - buffer

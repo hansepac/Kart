@@ -1,6 +1,6 @@
 import numpy as np
 from .Driver import Driver
-from .Camera import Camera
+from entities.Camera import Camera
 from input import Controller
 from utils.states import GameDebugState
 from ui import draw_debug_text, draw_speedometer, show_keyboard_ui, draw_minimap, draw_boost_bar
@@ -142,7 +142,7 @@ class LocalPlayer(Driver):
 
         if self.gameDebugState == self.gameDebugState.FLY_DEBUG:
             pg.event.set_grab(True) 
-            self.camera.control(inputs)
+            self.camera.control(inputs, pg.mouse.get_rel())
         else:
             self.inputs = inputs
 
