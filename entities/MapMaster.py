@@ -6,6 +6,14 @@ from entities.Terrain import TerrainDynamicCoordinator
 from entities.Driver import Driver
 from entities.AIDriver import AIDriver
 from utils.states import GameState
+from time import time as current_time
+
+class raceState:
+    WAITING = 0 # this one isn't used but maybe if we want it we could start using it. 
+    # I think a better thing to do would be to do waiting for network stuff in the lobby screen
+    COUNTING = 1
+    RACING = 2
+    DONE = 3
 
 class MapMaster:
     def __init__(self, screen, is_server = False):
@@ -23,6 +31,9 @@ class MapMaster:
 
         self.completed_drivers = []
 
+        self.race_state = raceState.COUNTING
+        self.start_time = current_time() # TODO: this needs to be synced over network
+
         
 
     def setup_game(self, track_origin = np.array([0, 0, 0]), num_flags = 12):
@@ -37,6 +48,8 @@ class MapMaster:
             new_flag_pos = self.flags[-1] + r*np.array([np.cos(phi), 0, np.sin(phi)])
             new_flag_pos[1] = self.terrainDynamicCoordinator.get_rough_height(new_flag_pos) # put it on the ground 
             self.flags.append(new_flag_pos)
+        self.terrainDynamicCoordinator.start_flag = self.flags[0]
+        self.terrainDynamicCoordinator.final_flag = self.flags[-1]
         self.map_loaded = True
 
     def get_game_setup_json(self):
@@ -90,7 +103,8 @@ class MapMaster:
             if not driver.is_alien:
                 # FOR LOCAL DRIVERS
                 driver.terrainDynamic.update_grid(driver.pos)
-                driver.control()
+                if self.race_state == raceState.RACING:
+                    driver.control()
                 driver.updatePosition(c.dt)
                 driver_dat.append(driver.get_data())
             # FOR ALL DRIVERS
@@ -112,7 +126,13 @@ class MapMaster:
         for player in self.local_players:
             player.updateCameraPositon()
 
-        self.sortPlayers()
+        if self.race_state == raceState.RACING: 
+            self.sortPlayers()
+
+        if self.race_state == raceState.COUNTING:
+            if current_time() > self.start_time + 3:
+                self.race_state = raceState.RACING
+    
       
     def draw(self, c):        
 
@@ -168,6 +188,15 @@ class MapMaster:
             # Blit box, then text
             self.screen.blit(box_surf, (text_rect.right - box_surf.get_width(), text_rect.top - 2))
             self.screen.blit(text_surf, text_rect)
+
+        if self.race_state == raceState.COUNTING:
+            time_left = int(3 - (current_time() - self.start_time)) + 1
+            font = pg.font.SysFont("papyrus", 120)
+            color = (255, 100, 100)  # Example: pinkish red
+            text_surface = font.render(str(time_left), True, color)
+            text_rect = text_surface.get_rect(center=self.screen.get_rect().center)
+            self.screen.blit(text_surface, text_rect)
+
         
 
 
@@ -195,9 +224,24 @@ class MapMaster:
 
         self.local_players.append(new_local_player)
         self.drivers.append(new_local_player)
+        if self.race_state == raceState.COUNTING: 
+            self.setUpTrackLocations()
         
     def addAIPlayer(self, pos=np.array([0.0, 0.0, 0.0]), direction_unitvec=np.array([1.0, 0.0, 0.0]), car_sprite = 2):
         self.drivers.append(AIDriver(self, pos=pos, direction_unitvec=direction_unitvec, car_sprite=car_sprite))
+        if self.race_state == raceState.COUNTING: 
+            self.setUpTrackLocations()
+
+    def setUpTrackLocations(self):
+        direction_vec = self.flags[1] - self.flags[0]
+        direction_vec /= np.linalg.norm(direction_vec)
+        perp_vec = np.cross(direction_vec, np.array([0, 1, 0]))
+        perp_vec /= np.linalg.norm(perp_vec)
+        driver_distance = 0.1
+        for i in range(len(self.drivers)):
+            self.drivers[i].pos = self.flags[0] - (len(self.drivers)//2 - i)*perp_vec*driver_distance
+            self.drivers[i].direction_unitvec = direction_vec
+
 
 
     def sortPlayers(self):

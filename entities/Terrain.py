@@ -3,7 +3,7 @@ from noise import pnoise2
 import random
 
 class TerrainDynamicCoordinator:
-    def __init__(self, grid_spacing = 0.1, noise_density_large = 0.01, detail_density = 0.12, noise_height_large = 3, detail_height = 0.3, color_density = 0.01, radius=20):
+    def __init__(self, grid_spacing = 0.1, noise_density_large = 0.01, detail_density = 0.12, noise_height_large = 3, detail_height = 0.3, color_density = 0.01, radius=20, final_flag = None, start_flag = None):
         self.grid_spacing = grid_spacing
         self.noise_density_large = noise_density_large
         self.detail_density = detail_density
@@ -11,6 +11,9 @@ class TerrainDynamicCoordinator:
         self.detail_height = detail_height
         self.color_density = color_density
         self.radius = radius
+
+        self.final_flag = final_flag
+        self.start_flag = start_flag
 
         # generate seed here so it makes it continuous
         self.height_base_large = np.random.randint(0, 1000)
@@ -90,11 +93,26 @@ class TerrainDynamic:
         
         self.trees[j, i] = self.has_tree(self.points[j, i, 0], self.points[j, i, 2])    
 
+        self.colours_grid[j, i, :], self.biomes[j, i] = self.calculate_perlin_color(i, j) 
+
+        # the starting platform
+        if not self.coordinator.start_flag is None:
+            distance_to_origin = (self.points[j, i, 0] - self.coordinator.start_flag[0])**2 + (self.points[j, i, 2] - self.coordinator.start_flag[2])**2
+            platform_size = 1
+            self.points[j, i, 1] = np.exp(-distance_to_origin**2/platform_size/2)*(self.coordinator.start_flag[1] - self.points[j, i, 1]) + self.points[j, i, 1]
+            self.colours_grid[j, i, :] = np.exp(-distance_to_origin**4/platform_size)*(np.array([100, 100, 100]) - self.colours_grid[j, i, :]) + self.colours_grid[j, i, :]
+
+        # final platform
+        if not self.coordinator.final_flag is None:
+            distance_to_flag = (self.points[j, i, 0] - self.coordinator.final_flag[0])**2 + (self.points[j, i, 2] - self.coordinator.final_flag[2])**2
+            platform_size = 1
+            self.points[j, i, 1] = np.exp(-distance_to_flag**2/platform_size/2)*(self.coordinator.final_flag[1] - self.points[j, i, 1]) + self.points[j, i, 1]
+            self.colours_grid[j, i, :] = np.exp(-distance_to_flag**4/platform_size/2)*(np.array([100, 100, 100]) - self.colours_grid[j, i, :]) + self.colours_grid[j, i, :]
+
         self.homo_points[j, i, 0:3] = self.points[j, i, :]
         self.homo_points[j, i, 3] = 1
 
-        self.colours_grid[j, i, :], self.biomes[j, i] = self.calculate_perlin_color(i, j) 
-
+        
         
 
     def has_tree(self, x, z):
